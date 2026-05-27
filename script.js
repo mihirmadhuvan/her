@@ -1,627 +1,696 @@
-:root {
-  --bg: #07040d;
-  --deep-black: #05030a;
-  --purple: #4b1e6d;
-  --purple-2: #6e28a8;
-  --pink: #ff4fa3;
-  --pink-2: #ff7ac4;
-  --gold: #ffcc66;
-  --text: #f6f2ff;
-  --muted: #cdbde6;
-  --glass: rgba(255, 255, 255, 0.06);
-  --glass-br: rgba(255, 255, 255, 0.15);
-  --ok: #6af1c8;
-  --err: #ff6b8a;
-  --shadow: rgba(0, 0, 0, 0.4);
+/* Mihir ❤️ Preeti — Cinematic Anniversary Universe (HTML/CSS/JS only) */
+
+/* ========= Utilities ========= */
+const $ = (s, p = document) => p.querySelector(s);
+const $$ = (s, p = document) => Array.from(p.querySelectorAll(s));
+
+const screens = {
+  gate: $('#gate'),
+  intro: $('#intro'),
+  universe: $('#universe'),
+  story: $('#story'),
+  quiz: $('#quiz'),
+  hunt: $('#hunt'),
+  letter: $('#letter'),
+  future: $('#future'),
+  finale: $('#finale')
+};
+
+function closeAllSections() {
+  Object.values(screens).forEach(sec => sec.classList.remove('visible'));
+  // Stop any modal within
+  stopAllOverlays();
 }
 
-* { box-sizing: border-box; }
-html, body {
-  margin: 0;
-  padding: 0;
-  background: radial-gradient(1200px 800px at 30% -10%, #0f0720, var(--bg));
-  color: var(--text);
-  font-family: Poppins, system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial, sans-serif;
-  height: 100%;
-  overflow: hidden;
+function openSelectedSection(id) {
+  closeAllSections();
+  const el = screens[id];
+  if (!el) return;
+  el.classList.add('visible');
+  setSectionAudio(id);
+  manageBackButtonVisibility(id);
 }
 
-h1, h2, h3 {
-  font-family: "Playfair Display", Georgia, serif;
-  letter-spacing: 0.3px;
+/* ========= Audio (single channel with crossfade) ========= */
+const audioEl = $('#audio-player');
+let currentTrack = '';
+let fadeInterval = null;
+const tracks = {
+  gate: 'assets/audio/password.mp3',
+  intro: 'assets/audio/intro.mp3',
+  universe: 'assets/audio/intro.mp3',
+  story: 'assets/audio/story.mp3',
+  quiz: 'assets/audio/quiz.mp3',
+  hunt: 'assets/audio/hunt.mp3',
+  letter: 'assets/audio/letter.mp3',
+  future: 'assets/audio/future.mp3',
+  finale: 'assets/audio/finale.mp3'
+};
+
+function fadeTo(src, duration = 900, targetVol = 0.9) {
+  if (currentTrack === src) return;
+  const startVol = audioEl.volume || 0;
+  const startPlaying = !audioEl.paused;
+
+  // Fade out
+  clearInterval(fadeInterval);
+  let t = 0;
+  const dt = 30;
+  const steps = Math.ceil(duration / dt);
+
+  const out = setInterval(() => {
+    t += 1;
+    audioEl.volume = Math.max(0, startVol * (1 - t / steps));
+    if (t >= steps) {
+      clearInterval(out);
+      // Switch
+      audioEl.src = src;
+      currentTrack = src;
+      audioEl.loop = true;
+      const play = () => audioEl.play().catch(() => {});
+      // Fade in
+      audioEl.volume = 0;
+      play();
+      let u = 0;
+      fadeInterval = setInterval(() => {
+        u += 1;
+        audioEl.volume = Math.min(targetVol, (u / steps) * targetVol);
+        if (u >= steps) clearInterval(fadeInterval);
+      }, dt);
+    }
+  }, dt);
 }
 
-.screen {
-  position: absolute;
-  inset: 0;
-  display: none;
-  align-items: center;
-  justify-content: center;
-  padding: 24px;
-}
-.screen.visible { display: flex; }
-
-.panel { flex-direction: column; gap: 20px; }
-
-.brand-title {
-  font-size: clamp(28px, 6vw, 56px);
-  font-weight: 800;
-  text-align: center;
-  background: linear-gradient(180deg, #fff, #e8d9ff 40%, #bd9dff 85%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  text-shadow: 0 8px 30px rgba(255, 105, 180, 0.2);
+function setSectionAudio(sectionId) {
+  const src =
+    tracks[sectionId] ||
+    tracks['universe']; // fallback
+  fadeTo(src);
 }
 
-.glass {
-  background: linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.03));
-  border: 1px solid rgba(255,255,255,0.15);
-  backdrop-filter: blur(12px);
-  border-radius: 18px;
-  box-shadow: 0 10px 50px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.06);
+/* ========= Background Stars ========= */
+const starCanvas = $('#bg-stars');
+const starCtx = starCanvas.getContext('2d');
+let W, H, stars = [];
+function resizeCanvas() {
+  W = starCanvas.width = window.innerWidth;
+  H = starCanvas.height = window.innerHeight;
+  fxCanvas.width = W;
+  fxCanvas.height = H;
+}
+window.addEventListener('resize', () => {
+  resizeCanvas();
+  spawnStars();
+});
+function spawnStars() {
+  const density = Math.min(220, Math.floor((W * H) / 12000));
+  stars = Array.from({ length: density }, () => ({
+    x: Math.random() * W,
+    y: Math.random() * H,
+    r: Math.random() * 1.3 + 0.2,
+    a: Math.random() * Math.PI * 2,
+    s: Math.random() * 0.5 + 0.2
+  }));
+}
+function renderStars() {
+  starCtx.clearRect(0, 0, W, H);
+  for (const st of stars) {
+    st.a += 0.015 * st.s;
+    const tw = 0.7 + Math.sin(st.a) * 0.3;
+    starCtx.beginPath();
+    starCtx.fillStyle = `rgba(255, 220, 255, ${0.25 * tw})`;
+    starCtx.arc(st.x, st.y, st.r * (0.9 + 0.2 * tw), 0, Math.PI * 2);
+    starCtx.fill();
+  }
+  requestAnimationFrame(renderStars);
 }
 
-.btn {
-  appearance: none;
-  border: none;
-  border-radius: 14px;
-  padding: 12px 18px;
-  color: #0b0613;
-  background: linear-gradient(135deg, var(--pink), var(--pink-2));
-  font-weight: 700;
-  cursor: pointer;
-  box-shadow: 0 10px 30px rgba(255, 90, 160, 0.35);
-  transition: transform 0.18s ease, box-shadow 0.18s ease, filter 0.3s ease;
-}
-.btn.primary { color: #13091f; }
-.btn.large { padding: 16px 26px; font-size: 18px; }
-.btn.glow {
-  color: #140a21;
-  text-shadow: 0 1px 0 rgba(255,255,255,0.2);
-  box-shadow: 0 12px 40px rgba(255, 90, 160, 0.45), 0 0 0 1px rgba(255,255,255,0.08) inset;
-}
-.btn:hover { transform: translateY(-1px); filter: brightness(1.05); }
-.btn:active { transform: translateY(0); }
+/* ========= FX Canvas (confetti, fireworks, trails) ========= */
+const fxCanvas = $('#fx-canvas');
+const fx = fxCanvas.getContext('2d');
+let fxParticles = [];
 
-.hidden { display: none !important; }
-
-/* Password Gate */
-#gate .gate-inner {
-  width: min(560px, 92vw);
-  padding: 28px;
-  text-align: center;
-}
-.pass-wrap { margin-top: 24px; display: grid; gap: 14px; }
-.pass-input {
-  width: 100%;
-  padding: 14px 16px;
-  font-size: 16px;
-  color: var(--text);
-  background: rgba(255,255,255,0.04);
-  border: 1px solid rgba(255,255,255,0.15);
-  border-radius: 12px;
-  outline: none;
-  transition: box-shadow 0.3s ease, border-color 0.3s ease, transform 0.2s ease;
-  text-align: center;
-  letter-spacing: 2px;
-}
-.pass-input:focus {
-  border-color: rgba(255, 140, 200, 0.6);
-  box-shadow: 0 0 0 6px rgba(255, 120, 200, 0.12), 0 0 20px rgba(255, 100, 200, 0.24);
-}
-.pass-input.shake {
-  animation: shake 450ms ease;
-  border-color: rgba(255, 80, 120, 0.8);
-  box-shadow: 0 0 0 6px rgba(255, 60, 100, 0.15), 0 0 20px rgba(255, 70, 120, 0.35);
-}
-.pass-msg {
-  min-height: 20px;
-  font-weight: 600;
-  color: var(--muted);
-}
-.pass-msg.err { color: var(--err); }
-.pass-msg.ok { color: var(--ok); }
-@keyframes shake {
-  10% { transform: translateX(-8px); }
-  20% { transform: translateX(8px); }
-  30% { transform: translateX(-6px); }
-  40% { transform: translateX(6px); }
-  50% { transform: translateX(-4px); }
-  60% { transform: translateX(4px); }
-  70% { transform: translateX(-2px); }
-  80% { transform: translateX(2px); }
-  100% { transform: translateX(0); }
+function addParticlesBurst(x, y, colorFrom = '#ff7ac4', colorTo = '#b36bff', n = 24, power = 3) {
+  for (let i = 0; i < n; i++) {
+    const a = Math.random() * Math.PI * 2;
+    const sp = (Math.random() * 1.5 + 0.5) * power;
+    fxParticles.push({
+      x, y,
+      vx: Math.cos(a) * sp,
+      vy: Math.sin(a) * sp,
+      life: 1,
+      colorFrom, colorTo,
+      size: Math.random() * 3 + 1,
+      g: 0.04
+    });
+  }
 }
 
-/* Intro */
-#intro .intro-inner {
-  text-align: center;
-  display: grid;
-  gap: 26px;
-  width: min(820px, 92vw);
-}
-.typewriter {
-  min-height: 180px;
-}
-.tw-line {
-  opacity: 0;
-  transform: translateY(10px);
-  filter: blur(4px);
-  font-size: clamp(16px, 2.2vw, 22px);
-  transition: opacity 0.8s ease, transform 0.8s ease, filter 0.8s ease;
-}
-.tw-line.show {
-  opacity: 1;
-  transform: translateY(0);
-  filter: blur(0);
+function addConfettiBurst(x, y, n = 40) {
+  for (let i = 0; i < n; i++) {
+    const a = Math.random() * Math.PI * 2;
+    const sp = Math.random() * 4 + 1;
+    const colors = ['#ffcc66', '#ff7ac4', '#b59bff', '#7effd4', '#78e7ff'];
+    fxParticles.push({
+      x, y,
+      vx: Math.cos(a) * sp,
+      vy: Math.sin(a) * sp - 1.2,
+      life: 1.2,
+      colorFrom: colors[(Math.random() * colors.length) | 0],
+      colorTo: '#ffffff',
+      size: Math.random() * 3 + 2,
+      g: 0.06,
+      confetti: true,
+      rot: Math.random() * Math.PI,
+      vr: (Math.random() - 0.5) * 0.2
+    });
+  }
 }
 
-/* Universe Main Menu */
-#universe { flex-direction: column; }
-.nav-back {
-  position: absolute;
-  left: 16px;
-  top: 16px;
-  background: rgba(255,255,255,0.08);
-  color: var(--text);
-  border: 1px solid rgba(255,255,255,0.15);
-  border-radius: 10px;
-  padding: 8px 12px;
-  z-index: 5;
-}
-.nav-back.hidden { display: none; }
-
-.universe-center {
-  position: relative;
-  width: 180px;
-  height: 180px;
-  margin-bottom: 20px;
-}
-.heart-core {
-  width: 100%;
-  height: 100%;
-  filter: drop-shadow(0 10px 40px rgba(255, 90, 160, 0.5));
-  background: radial-gradient(60% 60% at 40% 40%, #ff8fcf, #ff4fa3 60%, #6e28a8 100%);
-  -webkit-mask: radial-gradient(80px 80px at 35% 35%, #000 99%, transparent 100%),
-                 radial-gradient(80px 80px at 65% 35%, #000 99%, transparent 100%),
-                 linear-gradient(#000 0 0);
-  mask: radial-gradient(80px 80px at 35% 35%, #000 99%, transparent 100%),
-        radial-gradient(80px 80px at 65% 35%, #000 99%, transparent 100%),
-        linear-gradient(#000 0 0);
-  clip-path: polygon(50% 75%, 90% 35%, 75% 15%, 50% 30%, 25% 15%, 10% 35%);
-  border-radius: 22px;
-  animation: pulse 2.8s ease-in-out infinite;
-}
-@keyframes pulse {
-  0%,100% { transform: scale(1); }
-  50% { transform: scale(1.035); }
+function addFireworks(cx, cy, rings = 2) {
+  for (let r = 1; r <= rings; r++) {
+    const n = 50 + r * 30;
+    for (let i = 0; i < n; i++) {
+      const a = (i / n) * Math.PI * 2;
+      const sp = 1.5 * r + Math.random() * 1.2;
+      const col = r % 2 ? '#ffd27a' : '#ff7ac4';
+      fxParticles.push({
+        x: cx, y: cy,
+        vx: Math.cos(a) * sp,
+        vy: Math.sin(a) * sp,
+        life: 1.1,
+        colorFrom: col,
+        colorTo: '#ffffff',
+        size: 2 + Math.random() * 2,
+        g: 0.04
+      });
+    }
+  }
 }
 
-.orbit-wrap {
-  position: relative;
-  width: min(900px, 94vw);
-  height: min(560px, 70vh);
-  margin-inline: auto;
-}
-.planet {
-  position: absolute;
-  min-width: 120px;
-  max-width: 160px;
-  aspect-ratio: 1/1;
-  border-radius: 50%;
-  background: radial-gradient(120px 120px at 35% 35%, #ffd2ec, #ff6fb5 60%, #6e28a8 100%);
-  color: #140a21;
-  box-shadow: 0 16px 50px rgba(255, 80, 160, 0.35), 0 0 0 1px rgba(255,255,255,0.06) inset;
-  display: grid;
-  place-items: center;
-  padding: 10px;
-  text-align: center;
-  border: 1px solid rgba(255,255,255,0.16);
-  cursor: pointer;
-  transition: transform 0.2s ease, filter 0.3s ease, opacity 0.3s ease, box-shadow 0.3s ease;
-}
-.planet .emoji { font-size: 26px; }
-.planet .label {
-  font-size: 12px;
-  font-weight: 800;
-  line-height: 1.2;
-}
-.planet[data-locked="true"] {
-  filter: grayscale(0.7) brightness(0.8);
-  opacity: 0.6;
-  box-shadow: 0 6px 24px rgba(140, 110, 160, 0.2);
-}
-.planet[data-locked="false"] {
-  filter: none;
-  opacity: 1;
+function renderFx() {
+  fx.clearRect(0, 0, W, H);
+  const next = [];
+  for (const p of fxParticles) {
+    p.x += p.vx;
+    p.y += p.vy;
+    p.vy += p.g;
+    p.life -= 0.015;
+    if (p.confetti) p.rot += p.vr;
+
+    if (p.life > 0) {
+      const alpha = Math.max(0, p.life);
+      const grad = fx.createRadialGradient(p.x, p.y, 0, p.x, p.y, p.size * 3);
+      grad.addColorStop(0, p.colorFrom + Math.floor(alpha * 255).toString(16));
+      grad.addColorStop(1, 'rgba(255,255,255,0)');
+      fx.fillStyle = grad;
+      fx.beginPath();
+      fx.arc(p.x, p.y, p.size * 2, 0, Math.PI * 2);
+      fx.fill();
+
+      if (p.confetti) {
+        fx.save();
+        fx.translate(p.x, p.y);
+        fx.rotate(p.rot);
+        fx.fillStyle = p.colorFrom;
+        fx.fillRect(-p.size, -p.size * 0.5, p.size * 2, p.size);
+        fx.restore();
+      }
+
+      next.push(p);
+    }
+  }
+  fxParticles = next;
+  requestAnimationFrame(renderFx);
 }
 
-.hint {
-  margin-top: 20px;
-  color: var(--muted);
-  font-size: 14px;
-  text-align: center;
+/* ========= Custom Cursor + Trail + Magnetic ========= */
+const cursorCore = $('#cursor-core');
+const cursorRing = $('#cursor-ring');
+let cursor = { x: window.innerWidth / 2, y: window.innerHeight / 2 };
+let target = { x: cursor.x, y: cursor.y };
+
+window.addEventListener('mousemove', (e) => {
+  target.x = e.clientX;
+  target.y = e.clientY;
+});
+function animateCursor() {
+  const k = 0.18;
+  cursor.x += (target.x - cursor.x) * k;
+  cursor.y += (target.y - cursor.y) * k;
+  cursorCore.style.transform = `translate(${cursor.x - 5}px, ${cursor.y - 5}px)`;
+  cursorRing.style.transform = `translate(${cursor.x - 18}px, ${cursor.y - 18}px)`;
+  requestAnimationFrame(animateCursor);
+}
+// Ring growth on interactive elements
+['a','button','.opt','.planet','.dream-toggle','.pass-input'].forEach(sel => {
+  document.addEventListener('mouseover', (e) => {
+    if (e.target.closest(sel)) {
+      cursorRing.style.width = '48px';
+      cursorRing.style.height = '48px';
+      cursorRing.style.background = 'radial-gradient(22px 22px at 50% 50%, rgba(255,140,220,0.55), rgba(80,0,120,0.25))';
+    }
+  }, true);
+  document.addEventListener('mouseout', (e) => {
+    if (e.target.closest(sel)) {
+      cursorRing.style.width = '36px';
+      cursorRing.style.height = '36px';
+      cursorRing.style.background = 'radial-gradient(20px 20px at 50% 50%, rgba(255,120,200,0.45), rgba(80,0,120,0.2))';
+    }
+  }, true);
+});
+// Magnetic buttons
+function attachMagnetic(el) {
+  const rs = el.getBoundingClientRect();
+  const strength = 18;
+  function onMove(e) {
+    const x = e.clientX - (rs.left + rs.width / 2);
+    const y = e.clientY - (rs.top + rs.height / 2);
+    el.style.transform = `translate(${x / strength}px, ${y / strength}px)`;
+  }
+  function reset() { el.style.transform = 'translate(0,0)'; }
+  el.addEventListener('mousemove', onMove);
+  el.addEventListener('mouseleave', reset);
+}
+$$('.magnetic').forEach(attachMagnetic);
+
+/* ========= Navigation and progression ========= */
+const STATE = {
+  unlockedOrder: 1, // starts with Our Story unlocked
+  passwordOk: false
+};
+
+function updatePlanetsLock() {
+  $$('.planet').forEach(p => {
+    const order = Number(p.dataset.order || '99');
+    p.dataset.locked = order <= STATE.unlockedOrder ? 'false' : 'true';
+  });
+}
+function goUniverse() {
+  openSelectedSection('universe');
+  updatePlanetsLock();
 }
 
-/* Place planets in orbit-like positions (responsive) */
-.orbit-wrap .planet:nth-child(1) { left: 5%; top: 12%; }
-.orbit-wrap .planet:nth-child(2) { right: 8%; top: 16%; }
-.orbit-wrap .planet:nth-child(3) { left: 12%; bottom: 8%; }
-.orbit-wrap .planet:nth-child(4) { right: 14%; bottom: 12%; }
-.orbit-wrap .planet:nth-child(5) { left: 42%; top: 4%; }
-.orbit-wrap .planet:nth-child(6) { left: 46%; bottom: 2%; }
+/* Back button logic: shown inside panels, hidden on menu, but always works */
+function manageBackButtonVisibility(sectionId) {
+  $$('.nav-back').forEach(b => b.classList.add('hidden'));
+  if (sectionId !== 'universe' && sectionId !== 'gate') {
+    $$(`#${sectionId} .nav-back`).forEach(b => b.classList.remove('hidden'));
+  }
+}
+document.addEventListener('click', (e) => {
+  const back = e.target.closest('[data-back]');
+  if (!back) return;
+  // Return to universe
+  goUniverse();
+});
 
-/* Story */
-.panel-title {
-  text-align: center;
-  font-size: clamp(24px, 4.6vw, 40px);
-  margin: 6px 0 12px;
-  background: linear-gradient(180deg, #fff, #f4e8ff 50%, #d9c4ff 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-}
+/* ========= Gate (password) ========= */
+const PASS_VALUE = '2801';
+const passInput = $('#pass');
+const passMsg = $('#pass-msg');
+$('#unlock').addEventListener('click', tryUnlock);
+passInput.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') tryUnlock();
+});
 
-.cards-grid {
-  display: grid;
-  grid-template-columns: repeat( auto-fit, minmax(240px, 1fr) );
-  gap: 18px;
-  width: min(1100px, 96vw);
-  margin: 0 auto;
-}
-.memory-card {
-  perspective: 1200px;
-  position: relative;
-  height: 280px;
-}
-.memory-card .card-inner {
-  height: 100%;
-  transform-style: preserve-3d;
-  transition: transform 0.9s cubic-bezier(.2,.7,.1,1);
-  border-radius: 16px;
-}
-.memory-card:hover .card-inner { transform: rotateY(180deg); }
+function tryUnlock() {
+  const v = passInput.value.trim();
+  if (v !== PASS_VALUE) {
+    passMsg.textContent = 'Wrong password, Princess ❤️';
+    passMsg.classList.remove('ok');
+    passMsg.classList.add('err');
+    passInput.classList.remove('ok');
+    passInput.classList.add('shake');
+    addParticlesBurst(window.innerWidth / 2, window.innerHeight / 2, '#ff6b8a', '#ff4fa3', 16, 2);
+    setTimeout(() => passInput.classList.remove('shake'), 500);
+    return;
+  }
+  // Correct
+  STATE.passwordOk = true;
+  passMsg.textContent = '';
+  passMsg.classList.remove('err');
+  passInput.classList.add('ok');
+  addParticlesBurst(window.innerWidth / 2, window.innerHeight / 2, '#ff93d4', '#a070ff', 80, 4);
 
-.card-face {
-  position: absolute;
-  inset: 0;
-  backface-visibility: hidden;
-  overflow: hidden;
-  border-radius: 16px;
-  border: 1px solid rgba(255,255,255,0.15);
-  background: rgba(255,255,255,0.04);
-  box-shadow: 0 10px 40px rgba(0,0,0,0.35);
-  display: grid;
-  align-content: end;
-}
-.card-front {
-  padding: 12px;
-}
-.card-front img {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  filter: contrast(0.92) saturate(1.1) brightness(0.95);
-}
-.card-front h3 {
-  position: relative;
-  z-index: 2;
-  margin: 0;
-  padding: 8px 10px;
-  border-radius: 10px;
-  background: linear-gradient(180deg, rgba(0,0,0,0.25), rgba(0,0,0,0.5));
-  border: 1px solid rgba(255,255,255,0.12);
-  backdrop-filter: blur(10px);
-  width: fit-content;
-}
-.card-back {
-  padding: 18px;
-  transform: rotateY(180deg);
-  align-content: center;
-  text-align: center;
-  line-height: 1.6;
+  // Transition to intro
+  setTimeout(() => {
+    openSelectedSection('intro');
+    runIntroSequence();
+  }, 550);
 }
 
-/* Quiz */
-.howto {
-  width: min(800px, 94vw);
-  padding: 18px 18px 22px;
-  text-align: center;
-}
-.quiz-core {
-  width: min(820px, 94vw);
-  margin-inline: auto;
-  display: grid;
-  gap: 22px;
-}
-.progress-wrap {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-}
-.progress {
-  flex: 1;
-  height: 10px;
-  background: rgba(255,255,255,0.08);
-  border: 1px solid rgba(255,255,255,0.12);
-  border-radius: 999px;
-  overflow: hidden;
-}
-.progress-bar {
-  height: 100%;
-  width: 0%;
-  background: linear-gradient(90deg, #7effd4, #78e7ff, #b59bff);
-  transition: width 400ms ease;
-}
-.q-wrap {
-  background: linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.03));
-  border: 1px solid rgba(255,255,255,0.15);
-  border-radius: 16px;
-  padding: 18px;
-  box-shadow: 0 10px 40px rgba(0,0,0,0.35);
-}
-.options {
-  display: grid;
-  gap: 10px;
-  margin-top: 10px;
-}
-.opt {
-  width: 100%;
-  padding: 12px;
-  border-radius: 12px;
-  background: rgba(255,255,255,0.08);
-  color: var(--text);
-  border: 1px solid rgba(255,255,255,0.12);
-  cursor: pointer;
-  text-align: left;
-  transition: transform 0.12s ease, background 0.2s ease, border-color 0.2s ease;
-}
-.opt:hover { transform: translateY(-1px); }
-.opt.correct {
-  border-color: rgba(110, 241, 200, 0.9);
-  box-shadow: 0 0 20px rgba(110, 241, 200, 0.35);
-}
-.opt.wrong {
-  border-color: rgba(255, 90, 140, 0.9);
-  box-shadow: 0 0 20px rgba(255, 90, 140, 0.35);
-}
-.result-title { font-size: 24px; margin: 0 0 8px; }
-.quiz-finish { text-align: center; }
-
-/* Hunt */
-.hunt-core {
-  display: grid;
-  gap: 12px;
-  width: min(1000px, 96vw);
-  margin-inline: auto;
-}
-.hud {
-  display: flex;
-  gap: 16px;
-  align-items: center;
-  justify-content: space-between;
-}
-.hunt-stage {
-  position: relative;
-  height: min(56vh, 460px);
-  border-radius: 18px;
-  border: 1px solid rgba(255,255,255,0.15);
-  background: radial-gradient(700px 400px at 50% 20%, rgba(255,255,255,0.05), rgba(255,255,255,0.02));
-  overflow: hidden;
-  box-shadow: 0 10px 40px rgba(0,0,0,0.35);
-}
-.letter {
-  position: absolute;
-  font-weight: 900;
-  font-size: clamp(18px, 4vw, 38px);
-  color: #fff;
-  text-shadow: 0 4px 18px rgba(255, 110, 180, 0.4);
-  padding: 6px 10px;
-  border-radius: 10px;
-  background: linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.03));
-  border: 1px solid rgba(255,255,255,0.2);
-  cursor: pointer;
-  user-select: none;
-  transition: transform 120ms ease, filter 200ms ease;
-}
-.letter:hover { transform: scale(1.1); filter: brightness(1.15); }
-
-.collected { text-align: center; }
-.collected-line {
-  min-height: 32px;
-  letter-spacing: 1px;
-  word-break: break-word;
-  padding: 8px 10px;
-  display: inline-block;
-  border-radius: 12px;
-  border: 1px solid rgba(255,255,255,0.12);
-  background: rgba(255,255,255,0.04);
-}
-.final-message {
-  font-size: clamp(18px, 4.2vw, 34px);
-  font-weight: 800;
-  text-align: center;
-  background: linear-gradient(180deg, #fff, #ffd6f0 60%, #e7c2ff 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
+/* ========= Intro sequence ========= */
+function runIntroSequence() {
+  // Typewriter style reveals
+  const lines = $$('#intro .tw-line');
+  let base = 0;
+  lines.forEach((ln) => {
+    const delay = Number(ln.dataset.delay || base);
+    setTimeout(() => ln.classList.add('show'), delay);
+  });
 }
 
-/* Letter (paper) */
-.paper {
-  width: min(900px, 94vw);
-  margin: 0 auto;
-  padding: 24px 18px;
-  display: grid;
-  place-items: center;
-}
-.paper-inner {
-  width: 100%;
-  padding: 24px;
-  border-radius: 16px;
-  background:
-    radial-gradient(100% 100% at 50% 0%, rgba(255,255,255,0.7), rgba(255,255,255,0.45)),
-    #fff;
-  color: #2b1b3f;
-  border: 1px solid rgba(20, 5, 44, 0.15);
-  box-shadow: 0 25px 80px rgba(0,0,0,0.25);
-  font-family: "Playfair Display", Georgia, serif;
-  line-height: 1.75;
-  position: relative;
-  overflow: hidden;
-}
-.paper-inner:before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background:
-    radial-gradient(600px 200px at -10% -20%, rgba(255, 170, 210, 0.25), transparent 60%),
-    radial-gradient(600px 200px at 110% 120%, rgba(200, 170, 255, 0.25), transparent 60%);
-  pointer-events: none;
-}
-.typewriter-block p {
-  opacity: 0;
-  transform: translateY(8px);
-  transition: opacity 0.7s ease, transform 0.7s ease;
-  margin: 8px 0;
-}
-.typewriter-block p.show {
-  opacity: 1;
-  transform: translateY(0);
+$('#enter-universe').addEventListener('click', () => {
+  // cinematic transition burst
+  addParticlesBurst(window.innerWidth / 2, window.innerHeight / 2, '#ff7ac4', '#b36bff', 120, 4);
+  goUniverse();
+});
+
+/* ========= Universe planet navigation ========= */
+$$('.planet').forEach(p => {
+  p.addEventListener('click', () => {
+    const locked = p.dataset.locked === 'true';
+    const section = p.dataset.section;
+    if (locked) {
+      addParticlesBurst(cursor.x, cursor.y, '#bfa6ff', '#ff9fd8', 14, 2);
+      return;
+    }
+    openSelectedSection(section);
+    // Section-specific init:
+    if (section === 'story') {} // nothing extra on open
+    if (section === 'quiz') { /* waits for start */ }
+    if (section === 'hunt') { /* waits for start */ }
+    if (section === 'letter') startLetterTyping();
+    if (section === 'future') {} // toggles controlled by user
+    if (section === 'finale') startFinaleSequence();
+  });
+});
+
+/* ========= Story Completion ========= */
+$('#story-complete').addEventListener('click', () => {
+  // Unlock next
+  STATE.unlockedOrder = Math.max(STATE.unlockedOrder, 2);
+  addConfettiBurst(window.innerWidth / 2, window.innerHeight / 2, 80);
+  goUniverse();
+});
+
+/* ========= Quiz ========= */
+const quizHowto = $('#quiz-howto');
+const quizCore = $('#quiz-core');
+const quizProgress = $('#quiz-progress');
+const quizCounter = $('#quiz-counter');
+const quizFinish = $('#quiz-finish');
+const quizResultText = $('#quiz-result-text');
+
+$('#start-quiz').addEventListener('click', () => {
+  quizHowto.classList.add('hidden');
+  quizCore.classList.remove('hidden');
+  startQuiz();
+});
+
+let quizIndex = 0;
+let quizWrong = 0;
+
+function startQuiz() {
+  quizIndex = 0;
+  quizWrong = 0;
+  $$('.q-wrap', quizCore).forEach((el, i) => {
+    el.classList.toggle('hidden', i !== 0);
+    // Clear prior mark
+    $$('.opt', el).forEach(b => b.classList.remove('correct','wrong'));
+  });
+  quizProgress.style.width = '0%';
+  quizCounter.textContent = '0 / 3';
+  quizFinish.classList.add('hidden');
+
+  $$('.q-wrap .opt').forEach(btn => {
+    btn.onclick = (e) => {
+      const wrap = e.currentTarget.closest('.q-wrap');
+      const correct = wrap.dataset.answer;
+      const choice = e.currentTarget.dataset.val;
+      const opts = $$('.opt', wrap);
+      opts.forEach(o => o.disabled = true);
+
+      if (choice === correct) {
+        e.currentTarget.classList.add('correct');
+        addParticlesBurst(cursor.x, cursor.y, '#7effd4', '#78e7ff', 32, 3);
+      } else {
+        e.currentTarget.classList.add('wrong');
+        addParticlesBurst(cursor.x, cursor.y, '#ff6b8a', '#ff4fa3', 26, 3);
+        quizWrong += 1;
+      }
+      setTimeout(nextQuestion, 550);
+    };
+  });
 }
 
-/* Dreams (Future) */
-.dreams {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 14px;
-  width: min(900px, 94vw);
-  margin: 0 auto;
-}
-.dream-card {
-  border-radius: 16px;
-  border: 1px solid rgba(255,255,255,0.12);
-  background: linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.03));
-  overflow: hidden;
-  box-shadow: 0 10px 40px rgba(0,0,0,0.35);
-}
-.dream-toggle {
-  width: 100%;
-  text-align: left;
-  padding: 14px 16px;
-  background: transparent;
-  color: var(--text);
-  border: 0;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  cursor: pointer;
-  font-weight: 800;
-}
-.dream-body {
-  height: 0;
-  overflow: hidden;
-  transition: height 450ms ease;
-  padding: 0 16px;
-}
-.dream-body.open { padding-bottom: 14px; }
-.dream-body img {
-  width: 100%;
-  height: auto;
-  border-radius: 12px;
-  margin: 10px 0;
+function nextQuestion() {
+  const qs = $$('.q-wrap', quizCore);
+  qs[quizIndex].classList.add('hidden');
+
+  quizIndex += 1;
+  const prog = Math.round((quizIndex / qs.length) * 100);
+  quizProgress.style.width = prog + '%';
+  quizCounter.textContent = `${Math.min(quizIndex, qs.length)} / ${qs.length}`;
+
+  if (quizIndex >= qs.length) {
+    // Secret Unlock: at least TWO wrong answers unlock the next
+    const normalPass = (qs.length - quizWrong) >= 2; // pretend typical logic
+    const secretPass = quizWrong >= 2; // hidden condition actually used
+    quizFinish.classList.remove('hidden');
+    quizResultText.textContent = normalPass ? 'You did great! Your heart knows the answers.' : 'Not perfect—but love isn’t about perfect answers, it’s about us.';
+
+    // Regardless of visible message, unlock on secret condition:
+    if (secretPass) {
+      STATE.unlockedOrder = Math.max(STATE.unlockedOrder, 3);
+    } else if (normalPass) {
+      // If she does well, also unlock (keeps experience smooth)
+      STATE.unlockedOrder = Math.max(STATE.unlockedOrder, 3);
+    }
+  } else {
+    qs[quizIndex].classList.remove('hidden');
+  }
 }
 
-/* Finale */
-.finale-inner {
-  width: min(980px, 96vw);
-  text-align: center;
-  display: grid;
-  gap: 18px;
-  margin: 0 auto;
-}
-.finale-seq .tw-line {
-  font-size: clamp(16px, 2.2vw, 22px);
-}
-.finale-photo img {
-  width: 100%;
-  height: auto;
-  border-radius: 16px;
-  border: 1px solid rgba(255,255,255,0.15);
-  box-shadow: 0 10px 50px rgba(0,0,0,0.35);
-}
-.finale-text p {
-  font-size: clamp(16px, 2.2vw, 22px);
-  margin: 10px 0;
-}
-.finale-sign {
-  font-family: "Playfair Display", Georgia, serif;
-  font-size: clamp(18px, 3vw, 28px);
-  color: var(--gold);
-  text-shadow: 0 0 18px rgba(255, 204, 102, 0.4);
+$('#quiz-continue').addEventListener('click', () => {
+  addConfettiBurst(window.innerWidth / 2, window.innerHeight / 2, 120);
+  goUniverse();
+});
+
+/* ========= Anniversary Letter Hunt (floating letters) ========= */
+const HUNT_TARGET = 'HAPPY 2ND ANNIVERSARY PREETUU ❤️';
+const huntHowto = $('#hunt-howto');
+const huntCore = $('#hunt-core');
+const huntFinish = $('#hunt-finish');
+const huntStage = $('#hunt-stage');
+const huntTimerEl = $('#hunt-timer');
+const huntCountEl = $('#hunt-count');
+const huntTotalEl = $('#hunt-total');
+const huntCollectedEl = $('#hunt-collected');
+const huntMessageEl = $('#hunt-message');
+
+let huntLetters = [];
+let huntPicked = [];
+let huntTimer = 0;
+let huntTicker = null;
+
+$('#start-hunt').addEventListener('click', () => {
+  huntHowto.classList.add('hidden');
+  huntCore.classList.remove('hidden');
+  startHunt();
+});
+
+function startHunt() {
+  // Reset
+  huntStage.innerHTML = '';
+  huntCollectedEl.textContent = '';
+  huntPicked = [];
+  huntLetters = HUNT_TARGET.split('');
+  const totalLetters = huntLetters.filter(c => c !== ' ').length;
+  huntTotalEl.textContent = totalLetters;
+  huntCountEl.textContent = '0';
+  huntTimer = 60;
+  huntTimerEl.textContent = huntTimer.toString();
+
+  // Spawn letters randomly floating
+  const stageRect = huntStage.getBoundingClientRect();
+  huntLetters.forEach((ch, idx) => {
+    if (ch === ' ') return; // don't spawn spaces
+    const el = document.createElement('div');
+    el.className = 'letter';
+    el.textContent = ch;
+    const x = Math.random() * (stageRect.width - 50) + 10;
+    const y = Math.random() * (stageRect.height - 50) + 10;
+    el.style.left = x + 'px';
+    el.style.top = y + 'px';
+
+    // Gentle float animation via JS
+    const dir = Math.random() < 0.5 ? -1 : 1;
+    let t = Math.random() * Math.PI * 2;
+    const sp = 0.02 + Math.random() * 0.03;
+    const amp = 14 + Math.random() * 16;
+
+    el._anim = function anim() {
+      t += sp;
+      const dx = Math.cos(t) * amp;
+      const dy = Math.sin(t) * amp * 0.6 * dir;
+      el.style.transform = `translate(${dx}px, ${dy}px)`;
+      el._raf = requestAnimationFrame(anim);
+    };
+    el._raf = requestAnimationFrame(el._anim);
+
+    el.addEventListener('click', () => {
+      cancelAnimationFrame(el._raf);
+      el.remove();
+      huntPicked.push(ch);
+      huntCollectedEl.textContent = huntPicked.join('');
+      huntCountEl.textContent = String(huntPicked.length);
+      addParticlesBurst(cursor.x, cursor.y, '#ff7ac4', '#b36bff', 22, 3);
+      checkHuntDone();
+    });
+
+    huntStage.appendChild(el);
+  });
+
+  // Timer
+  clearInterval(huntTicker);
+  huntTicker = setInterval(() => {
+    huntTimer -= 1;
+    huntTimerEl.textContent = huntTimer.toString();
+    if (huntTimer <= 0) {
+      clearInterval(huntTicker);
+      // If not completed, gently help: auto-collect remaining
+      autoCollectRemaining();
+      checkHuntDone(true);
+    }
+  }, 1000);
 }
 
-/* Vignette overlay */
-#vignette {
-  position: fixed;
-  inset: 0;
-  pointer-events: none;
-  background:
-    radial-gradient(1200px 600px at 50% 20%, rgba(255,255,255,0.08), transparent 50%),
-    radial-gradient(1200px 800px at 50% 120%, rgba(255,255,255,0.04), transparent 55%),
-    radial-gradient(120% 120% at 50% 50%, transparent 60%, rgba(0,0,0,0.6));
-  z-index: 2;
+function autoCollectRemaining() {
+  const remain = $$('.letter', huntStage);
+  remain.forEach((el) => {
+    el.click();
+  });
 }
 
-/* Background canvases */
-#bg-stars, #fx-canvas {
-  position: fixed;
-  inset: 0;
-  z-index: -1;
-}
-#fx-canvas { z-index: 4; pointer-events: none; }
-
-/* Custom cursor */
-#cursor-core, #cursor-ring {
-  position: fixed;
-  inset: 0 auto auto 0;
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  pointer-events: none;
-  z-index: 6;
-  mix-blend-mode: screen;
-}
-#cursor-core {
-  background: radial-gradient(10px 10px at 50% 50%, #ff9fd8, #b36bff 80%);
-  filter: blur(0.5px);
-  transform: translate(-50%, -50%);
-}
-#cursor-ring {
-  width: 36px; height: 36px;
-  background: radial-gradient(20px 20px at 50% 50%, rgba(255,120,200,0.45), rgba(80,0,120,0.2));
-  border: 1px solid rgba(255,255,255,0.25);
-  filter: blur(0.4px);
-  transform: translate(-50%, -50%);
-  transition: width 180ms ease, height 180ms ease, background 220ms ease, transform 100ms ease;
+function checkHuntDone(fromAuto = false) {
+  const remain = $$('.letter', huntStage).length;
+  if (remain === 0) {
+    clearInterval(huntTicker);
+    // Completion animation
+    addConfettiBurst(window.innerWidth / 2, window.innerHeight / 2, 160);
+    setTimeout(() => {
+      huntCore.classList.add('hidden');
+      huntFinish.classList.remove('hidden');
+      huntMessageEl.textContent = HUNT_TARGET;
+      // Unlock next section
+      STATE.unlockedOrder = Math.max(STATE.unlockedOrder, 4);
+    }, 400);
+  }
 }
 
-/* Magnetic hover target */
-.magnetic { position: relative; }
+$('#hunt-continue').addEventListener('click', () => {
+  goUniverse();
+});
 
-/* Accessibility and small devices */
-@media (hover: none) and (pointer: coarse) {
-  #cursor-core, #cursor-ring { display: none; }
+/* ========= Letter From Mihir typing ========= */
+let letterStarted = false;
+function startLetterTyping() {
+  if (letterStarted) return;
+  letterStarted = true;
+  const paras = $$('#letter-typed p');
+  let d = 0;
+  paras.forEach(p => {
+    setTimeout(() => p.classList.add('show'), d);
+    d += 650;
+  });
 }
-@media (max-width: 640px) {
-  .orbit-wrap { height: 64vh; }
-  .planet { min-width: 110px; }
-  .heart-core { transform: scale(0.9); }
+$('#letter-continue').addEventListener('click', () => {
+  STATE.unlockedOrder = Math.max(STATE.unlockedOrder, 5);
+  addParticlesBurst(window.innerWidth / 2, window.innerHeight / 2, '#ffd27a', '#ff9fd8', 80, 3);
+  goUniverse();
+});
+
+/* ========= Future Together ========= */
+$$('.dream-card').forEach(card => {
+  const btn = $('.dream-toggle', card);
+  const body = $('.dream-body', card);
+  btn.addEventListener('click', () => {
+    const expanded = btn.getAttribute('aria-expanded') === 'true';
+    // measure height
+    if (!expanded) {
+      body.style.height = 'auto';
+      const h = body.clientHeight + 16;
+      body.style.height = '0px';
+      body.offsetHeight; // force reflow
+      body.style.height = h + 'px';
+      body.classList.add('open');
+    } else {
+      body.style.height = body.clientHeight + 'px';
+      body.offsetHeight;
+      body.style.height = '0px';
+      body.classList.remove('open');
+    }
+    btn.setAttribute('aria-expanded', (!expanded).toString());
+  });
+});
+$('#future-continue').addEventListener('click', () => {
+  STATE.unlockedOrder = Math.max(STATE.unlockedOrder, 6);
+  addParticlesBurst(window.innerWidth / 2, window.innerHeight / 2, '#b59bff', '#7effd4', 90, 3);
+  goUniverse();
+});
+
+/* ========= Finale ========= */
+function startFinaleSequence() {
+  // Reveal lines one by one, then show photo, text
+  const seq = $$('#finale .finale-seq .tw-line');
+  let t = 0;
+  seq.forEach((ln, i) => {
+    setTimeout(() => ln.classList.add('show'), t);
+    t += 1400;
+  });
+  // Could add additional staged reveals if desired
+}
+$('#finale-button').addEventListener('click', () => {
+  $('#finale-sign').classList.remove('hidden');
+  // Fireworks + confetti + hearts
+  addFireworks(window.innerWidth * 0.3, window.innerHeight * 0.4, 3);
+  addFireworks(window.innerWidth * 0.7, window.innerHeight * 0.35, 3);
+  addConfettiBurst(window.innerWidth / 2, window.innerHeight * 0.2, 180);
+  // Floating hearts burst
+  heartShower();
+});
+
+function heartShower(n = 36) {
+  for (let i = 0; i < n; i++) {
+    const x = Math.random() * window.innerWidth * 0.9 + window.innerWidth * 0.05;
+    const y = Math.random() * window.innerHeight * 0.2 + window.innerHeight * 0.6;
+    addParticlesBurst(x, y, '#ff7ac4', '#ff9fd8', 16, 2);
+  }
 }
 
-/* Anim helpers */
-.fade-in { animation: fadeIn 700ms ease both; }
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(8px); }
-  to { opacity: 1; transform: translateY(0); }
+/* ========= Overlay/Modal guards ========= */
+function stopAllOverlays() {
+  // Close quiz/hunt overlays if visible
+  quizHowto?.classList.add('hidden');
+  huntHowto?.classList.add('hidden');
+  // Reset states that must reopen with user action
+  quizFinish?.classList.add('hidden');
+  huntFinish?.classList.add('hidden');
+  quizCore?.classList.add('hidden');
+  huntCore?.classList.add('hidden');
 }
+
+/* ========= Initialization ========= */
+function init() {
+  resizeCanvas();
+  spawnStars();
+  renderStars();
+  renderFx();
+  animateCursor();
+
+  // Initial audio
+  setSectionAudio('gate');
+  updatePlanetsLock();
+
+  // Accessibility: allow scrolling inside panels if content exceeds
+  // but keep body non-scrolling for cinematic feel
+  Object.values(screens).forEach(s => {
+    s.addEventListener('wheel', () => {
+      // nothing needed, panels are full-screen
+    }, { passive: true });
+  });
+}
+
+init();
