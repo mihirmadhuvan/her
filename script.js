@@ -1,972 +1,627 @@
-/* ============================================================
-   ANNIVERSARY INTERACTIVE EXPERIENCE - script.js
-   ============================================================ */
-
-'use strict';
-
-// ===== STATE =====
-const state = {
-  quizCompleted: false,
-  huntCompleted: false,
-  puzzleCompleted: false,
-  achievements: [],
-  currentScreen: 'intro',
-  easterEggsFound: 0
-};
-
-// ===== QUIZ DATA (CUSTOMIZE THESE!) =====
-const quizQuestions = [
-  {
-    q: "What was the first thing we ever talked about?",
-    options: ["Something random", "A common interest", "A joke you told", "A question you asked"],
-    correct: 1
-  },
-  {
-    q: "What's my favourite thing about you?",
-    options: ["Your smile", "Your laugh", "Your kindness", "All of the above ❤️"],
-    correct: 3
-  },
-  {
-    q: "Which describes our first date best?",
-    options: ["Nervous but perfect", "Awkward and funny", "Romantic and magical", "All of the above"],
-    correct: 2
-  },
-  {
-    q: "What song reminds me of you?",
-    options: ["A love song", "Something you hum", "Our song", "A song you love"],
-    correct: 2
-  },
-  {
-    q: "What's my love language?",
-    options: ["Words of affirmation", "Quality time", "Acts of service", "Physical touch"],
-    correct: 1
-  },
-  {
-    q: "How many times a day do I think about you?",
-    options: ["A few times", "Many times", "Constantly", "Every single second"],
-    correct: 3
-  },
-  {
-    q: "What's my favourite memory with you?",
-    options: ["Our first meeting", "When you laughed uncontrollably", "A quiet peaceful moment", "All of them"],
-    correct: 3
-  },
-  {
-    q: "How long will I love you?",
-    options: ["For a while", "For a long time", "Forever", "Beyond forever"],
-    correct: 3
-  }
-];
-
-let quizIndex = 0, quizScore = 0;
-
-// ===== LETTER TEXT =====
-const letterContent = `I have been trying to find the right words
-for what feels like forever.
-
-The truth is, you changed everything.
-
-Not in a dramatic, movie-way. But in the quiet,
-everyday way that matters most.
-
-You made ordinary moments feel extraordinary.
-You made me feel seen, understood, chosen.
-
-I don't know what I did to deserve someone like you —
-but I am grateful every single day.
-
-Every laugh we've shared, every silent understanding,
-every time you reached for my hand...
-
-Those are the moments I will carry with me always.
-
-Two years with you is the greatest story
-I've ever been a part of.
-
-And I can't wait to keep writing it — with you.`;
-
-// ===== PUZZLE DATA =====
-let puzzleState = [];
-let puzzleMoves = 0;
-const puzzleEmojis = ['💖', '🌹', '⭐', '💫', '🌙', '💝', '✨', '🦋'];
-const puzzleSize = 3;
-
-// ===== HUNT STATE =====
-let huntScore = 0, huntTimer = 30, huntInterval = null, huntHeartInterval = null, huntActive = false;
-
-// ===== SLIDESHOW =====
-let slideIndex = 0, slideInterval = null;
-
-// ============================================================
-//   CURSOR
-// ============================================================
-const cursor = document.getElementById('cursor');
-const cursorGlow = document.getElementById('cursor-glow');
-
-document.addEventListener('mousemove', e => {
-  cursor.style.left = e.clientX + 'px';
-  cursor.style.top = e.clientY + 'px';
-  setTimeout(() => {
-    cursorGlow.style.left = e.clientX + 'px';
-    cursorGlow.style.top = e.clientY + 'px';
-  }, 80);
-});
-
-// ============================================================
-//   FLOATING PARTICLES CANVAS
-// ============================================================
-const canvas = document.getElementById('particles-canvas');
-const ctx = canvas.getContext('2d');
-let particles = [];
-
-function resizeCanvas() {
-  canvas.width = window.innerWidth;
-  canvas.height = window.innerHeight;
-}
-resizeCanvas();
-window.addEventListener('resize', resizeCanvas);
-
-function createParticle() {
-  const types = ['star', 'heart', 'circle'];
-  return {
-    type: types[Math.floor(Math.random() * types.length)],
-    x: Math.random() * canvas.width,
-    y: Math.random() * canvas.height,
-    size: Math.random() * 3 + 1,
-    vx: (Math.random() - 0.5) * 0.4,
-    vy: Math.random() * -0.5 - 0.1,
-    opacity: Math.random() * 0.5 + 0.1,
-    color: ['#f0c060', '#ff6eb4', '#b06cff', '#ffffff'][Math.floor(Math.random() * 4)],
-    life: 1
-  };
+:root {
+  --bg: #07040d;
+  --deep-black: #05030a;
+  --purple: #4b1e6d;
+  --purple-2: #6e28a8;
+  --pink: #ff4fa3;
+  --pink-2: #ff7ac4;
+  --gold: #ffcc66;
+  --text: #f6f2ff;
+  --muted: #cdbde6;
+  --glass: rgba(255, 255, 255, 0.06);
+  --glass-br: rgba(255, 255, 255, 0.15);
+  --ok: #6af1c8;
+  --err: #ff6b8a;
+  --shadow: rgba(0, 0, 0, 0.4);
 }
 
-for (let i = 0; i < 80; i++) particles.push(createParticle());
-
-function drawParticle(p) {
-  ctx.save();
-  ctx.globalAlpha = p.opacity * p.life;
-  ctx.fillStyle = p.color;
-  if (p.type === 'heart') {
-    ctx.font = `${p.size * 4}px serif`;
-    ctx.fillText('♥', p.x, p.y);
-  } else if (p.type === 'star') {
-    ctx.beginPath();
-    for (let i = 0; i < 5; i++) {
-      const angle = (i * 4 * Math.PI) / 5 - Math.PI / 2;
-      const r = i % 2 === 0 ? p.size * 2 : p.size;
-      ctx.lineTo(p.x + Math.cos(angle) * r, p.y + Math.sin(angle) * r);
-    }
-    ctx.closePath(); ctx.fill();
-  } else {
-    ctx.beginPath();
-    ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
-    ctx.fill();
-  }
-  ctx.restore();
+* { box-sizing: border-box; }
+html, body {
+  margin: 0;
+  padding: 0;
+  background: radial-gradient(1200px 800px at 30% -10%, #0f0720, var(--bg));
+  color: var(--text);
+  font-family: Poppins, system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial, sans-serif;
+  height: 100%;
+  overflow: hidden;
 }
 
-function animateParticles() {
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-  particles.forEach(p => {
-    p.x += p.vx; p.y += p.vy;
-    if (p.y < -20 || p.x < -20 || p.x > canvas.width + 20) {
-      Object.assign(p, createParticle());
-      p.y = canvas.height + 10;
-    }
-    drawParticle(p);
-  });
-  requestAnimationFrame(animateParticles);
-}
-animateParticles();
-
-// ============================================================
-//   INTRO SCREEN
-// ============================================================
-const introText = "I made something special for you...";
-const enterBtn = document.getElementById('enter-btn');
-let charIndex = 0;
-
-function typeWriter() {
-  const el = document.getElementById('typewriter-text');
-  if (charIndex < introText.length) {
-    el.textContent += introText[charIndex++];
-    setTimeout(typeWriter, 80);
-  } else {
-    setTimeout(() => {
-      enterBtn.classList.remove('hidden');
-      enterBtn.classList.add('visible');
-    }, 600);
-  }
+h1, h2, h3 {
+  font-family: "Playfair Display", Georgia, serif;
+  letter-spacing: 0.3px;
 }
 
-// Intro stars
-function createIntroStars() {
-  const container = document.getElementById('intro-stars');
-  for (let i = 0; i < 150; i++) {
-    const s = document.createElement('div');
-    const size = Math.random() * 2 + 1;
-    s.style.cssText = `
-      position:absolute;
-      width:${size}px; height:${size}px;
-      left:${Math.random()*100}%;
-      top:${Math.random()*100}%;
-      background:#fff;
-      border-radius:50%;
-      animation: twinkle ${2 + Math.random()*3}s ease-in-out infinite;
-      animation-delay:${Math.random()*3}s;
-      opacity:${0.2 + Math.random()*0.6};
-    `;
-    container.appendChild(s);
-  }
+.screen {
+  position: absolute;
+  inset: 0;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+.screen.visible { display: flex; }
+
+.panel { flex-direction: column; gap: 20px; }
+
+.brand-title {
+  font-size: clamp(28px, 6vw, 56px);
+  font-weight: 800;
+  text-align: center;
+  background: linear-gradient(180deg, #fff, #e8d9ff 40%, #bd9dff 85%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  text-shadow: 0 8px 30px rgba(255, 105, 180, 0.2);
 }
 
-setTimeout(() => { createIntroStars(); typeWriter(); }, 300);
-
-enterBtn.addEventListener('click', () => {
-  unlockAchievement("Entered Our Universe", "The journey begins ❤️");
-  transitionTo('menu');
-});
-
-// ============================================================
-//   SCREEN TRANSITIONS
-// ============================================================
-function transitionTo(screenId) {
-  const current = document.querySelector('.screen.active');
-  const next = document.getElementById('screen-' + screenId);
-  if (!next) return;
-  if (current) {
-    current.style.opacity = '0';
-    setTimeout(() => {
-      current.classList.remove('active');
-      current.style.opacity = '';
-    }, 400);
-  }
-  setTimeout(() => {
-    next.classList.add('active', 'screen-fade-in', 'scrollable');
-    state.currentScreen = screenId;
-    onScreenEnter(screenId);
-  }, 400);
+.glass {
+  background: linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.03));
+  border: 1px solid rgba(255,255,255,0.15);
+  backdrop-filter: blur(12px);
+  border-radius: 18px;
+  box-shadow: 0 10px 50px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.06);
 }
 
-function onScreenEnter(id) {
-  if (id === 'story') initStory();
-  if (id === 'letters') initLetter();
-  if (id === 'future') initFuture();
-  if (id === 'quiz-game') initQuizGame();
-  if (id === 'puzzle') initPuzzle();
-  if (id === 'finale') initFinale();
-  if (id === 'vault') updateVault();
-  if (id === 'quiz') updateChallenges();
-  if (id === 'menu') updateMenu();
+.btn {
+  appearance: none;
+  border: none;
+  border-radius: 14px;
+  padding: 12px 18px;
+  color: #0b0613;
+  background: linear-gradient(135deg, var(--pink), var(--pink-2));
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 10px 30px rgba(255, 90, 160, 0.35);
+  transition: transform 0.18s ease, box-shadow 0.18s ease, filter 0.3s ease;
+}
+.btn.primary { color: #13091f; }
+.btn.large { padding: 16px 26px; font-size: 18px; }
+.btn.glow {
+  color: #140a21;
+  text-shadow: 0 1px 0 rgba(255,255,255,0.2);
+  box-shadow: 0 12px 40px rgba(255, 90, 160, 0.45), 0 0 0 1px rgba(255,255,255,0.08) inset;
+}
+.btn:hover { transform: translateY(-1px); filter: brightness(1.05); }
+.btn:active { transform: translateY(0); }
+
+.hidden { display: none !important; }
+
+/* Password Gate */
+#gate .gate-inner {
+  width: min(560px, 92vw);
+  padding: 28px;
+  text-align: center;
+}
+.pass-wrap { margin-top: 24px; display: grid; gap: 14px; }
+.pass-input {
+  width: 100%;
+  padding: 14px 16px;
+  font-size: 16px;
+  color: var(--text);
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.15);
+  border-radius: 12px;
+  outline: none;
+  transition: box-shadow 0.3s ease, border-color 0.3s ease, transform 0.2s ease;
+  text-align: center;
+  letter-spacing: 2px;
+}
+.pass-input:focus {
+  border-color: rgba(255, 140, 200, 0.6);
+  box-shadow: 0 0 0 6px rgba(255, 120, 200, 0.12), 0 0 20px rgba(255, 100, 200, 0.24);
+}
+.pass-input.shake {
+  animation: shake 450ms ease;
+  border-color: rgba(255, 80, 120, 0.8);
+  box-shadow: 0 0 0 6px rgba(255, 60, 100, 0.15), 0 0 20px rgba(255, 70, 120, 0.35);
+}
+.pass-msg {
+  min-height: 20px;
+  font-weight: 600;
+  color: var(--muted);
+}
+.pass-msg.err { color: var(--err); }
+.pass-msg.ok { color: var(--ok); }
+@keyframes shake {
+  10% { transform: translateX(-8px); }
+  20% { transform: translateX(8px); }
+  30% { transform: translateX(-6px); }
+  40% { transform: translateX(6px); }
+  50% { transform: translateX(-4px); }
+  60% { transform: translateX(4px); }
+  70% { transform: translateX(-2px); }
+  80% { transform: translateX(2px); }
+  100% { transform: translateX(0); }
 }
 
-// Back buttons
-document.querySelectorAll('.back-btn').forEach(btn => {
-  btn.addEventListener('click', () => transitionTo(btn.dataset.back));
-});
-
-// Menu cards
-document.querySelectorAll('.menu-card').forEach(card => {
-  card.addEventListener('click', () => {
-    const target = card.dataset.screen;
-    transitionTo(target);
-  });
-});
-
-// ============================================================
-//   ACHIEVEMENT SYSTEM
-// ============================================================
-function unlockAchievement(title, desc) {
-  if (state.achievements.includes(title)) return;
-  state.achievements.push(title);
-  const toast = document.getElementById('achievement-toast');
-  document.getElementById('achievement-desc').textContent = desc;
-  toast.classList.add('show');
-  setTimeout(() => toast.classList.remove('show'), 3500);
+/* Intro */
+#intro .intro-inner {
+  text-align: center;
+  display: grid;
+  gap: 26px;
+  width: min(820px, 92vw);
+}
+.typewriter {
+  min-height: 180px;
+}
+.tw-line {
+  opacity: 0;
+  transform: translateY(10px);
+  filter: blur(4px);
+  font-size: clamp(16px, 2.2vw, 22px);
+  transition: opacity 0.8s ease, transform 0.8s ease, filter 0.8s ease;
+}
+.tw-line.show {
+  opacity: 1;
+  transform: translateY(0);
+  filter: blur(0);
 }
 
-// ============================================================
-//   OUR STORY TIMELINE
-// ============================================================
-function initStory() {
-  const items = document.querySelectorAll('.timeline-item');
-  items.forEach((item, i) => {
-    setTimeout(() => item.classList.add('visible'), i * 150);
-  });
-  document.querySelectorAll('.timeline-card').forEach(card => {
-    card.addEventListener('click', () => {
-      card.classList.toggle('flipped');
-      if (card.classList.contains('flipped')) {
-        unlockAchievement("Memory Unlocked", "A beautiful memory revealed ❤️");
-      }
-    });
-  });
+/* Universe Main Menu */
+#universe { flex-direction: column; }
+.nav-back {
+  position: absolute;
+  left: 16px;
+  top: 16px;
+  background: rgba(255,255,255,0.08);
+  color: var(--text);
+  border: 1px solid rgba(255,255,255,0.15);
+  border-radius: 10px;
+  padding: 8px 12px;
+  z-index: 5;
+}
+.nav-back.hidden { display: none; }
+
+.universe-center {
+  position: relative;
+  width: 180px;
+  height: 180px;
+  margin-bottom: 20px;
+}
+.heart-core {
+  width: 100%;
+  height: 100%;
+  filter: drop-shadow(0 10px 40px rgba(255, 90, 160, 0.5));
+  background: radial-gradient(60% 60% at 40% 40%, #ff8fcf, #ff4fa3 60%, #6e28a8 100%);
+  -webkit-mask: radial-gradient(80px 80px at 35% 35%, #000 99%, transparent 100%),
+                 radial-gradient(80px 80px at 65% 35%, #000 99%, transparent 100%),
+                 linear-gradient(#000 0 0);
+  mask: radial-gradient(80px 80px at 35% 35%, #000 99%, transparent 100%),
+        radial-gradient(80px 80px at 65% 35%, #000 99%, transparent 100%),
+        linear-gradient(#000 0 0);
+  clip-path: polygon(50% 75%, 90% 35%, 75% 15%, 50% 30%, 25% 15%, 10% 35%);
+  border-radius: 22px;
+  animation: pulse 2.8s ease-in-out infinite;
+}
+@keyframes pulse {
+  0%,100% { transform: scale(1); }
+  50% { transform: scale(1.035); }
 }
 
-// ============================================================
-//   MEMORY VAULT
-// ============================================================
-function updateVault() {
-  const boxes = document.querySelectorAll('.vault-box');
-  boxes.forEach(box => {
-    const req = box.dataset.requires;
-    if (req === 'none') {
-      box.classList.remove('locked');
-    } else if (req === 'quiz' && state.quizCompleted) {
-      box.classList.remove('locked');
-      box.querySelector('.box-status').textContent = '🔓 Unlocked';
-    } else if (req === 'all' && state.quizCompleted && state.huntCompleted && state.puzzleCompleted) {
-      box.classList.remove('locked');
-      box.querySelector('.box-status').textContent = '🔓 Unlocked';
-    }
-
-    if (!box.classList.contains('locked') && !box.classList.contains('open')) {
-      box.addEventListener('click', () => {
-        const content = box.querySelector('.box-content');
-        content.classList.toggle('hidden');
-        box.classList.toggle('open');
-        if (!content.classList.contains('hidden')) {
-          unlockAchievement("Vault Opened", "A secret memory unlocked 💙");
-        }
-      }, { once: false });
-    }
-  });
+.orbit-wrap {
+  position: relative;
+  width: min(900px, 94vw);
+  height: min(560px, 70vh);
+  margin-inline: auto;
+}
+.planet {
+  position: absolute;
+  min-width: 120px;
+  max-width: 160px;
+  aspect-ratio: 1/1;
+  border-radius: 50%;
+  background: radial-gradient(120px 120px at 35% 35%, #ffd2ec, #ff6fb5 60%, #6e28a8 100%);
+  color: #140a21;
+  box-shadow: 0 16px 50px rgba(255, 80, 160, 0.35), 0 0 0 1px rgba(255,255,255,0.06) inset;
+  display: grid;
+  place-items: center;
+  padding: 10px;
+  text-align: center;
+  border: 1px solid rgba(255,255,255,0.16);
+  cursor: pointer;
+  transition: transform 0.2s ease, filter 0.3s ease, opacity 0.3s ease, box-shadow 0.3s ease;
+}
+.planet .emoji { font-size: 26px; }
+.planet .label {
+  font-size: 12px;
+  font-weight: 800;
+  line-height: 1.2;
+}
+.planet[data-locked="true"] {
+  filter: grayscale(0.7) brightness(0.8);
+  opacity: 0.6;
+  box-shadow: 0 6px 24px rgba(140, 110, 160, 0.2);
+}
+.planet[data-locked="false"] {
+  filter: none;
+  opacity: 1;
 }
 
-// ============================================================
-//   CHALLENGES UPDATE
-// ============================================================
-function updateChallenges() {
-  if (state.quizCompleted) {
-    document.getElementById('challenge-quiz-card').classList.add('completed');
-    document.getElementById('quiz-badge').textContent = '✅';
-    document.getElementById('start-quiz-btn').textContent = 'Play Again';
-  }
-  if (state.huntCompleted) {
-    document.getElementById('challenge-hunt-card').classList.add('completed');
-    document.getElementById('hunt-badge').textContent = '✅';
-    document.getElementById('start-hunt-btn').textContent = 'Play Again';
-  }
-  if (state.puzzleCompleted) {
-    document.getElementById('challenge-puzzle-card').classList.add('completed');
-    document.getElementById('puzzle-badge').textContent = '✅';
-    document.getElementById('start-puzzle-btn').textContent = 'Play Again';
-  }
+.hint {
+  margin-top: 20px;
+  color: var(--muted);
+  font-size: 14px;
+  text-align: center;
 }
 
-document.getElementById('start-quiz-btn').addEventListener('click', () => transitionTo('quiz-game'));
-document.getElementById('start-hunt-btn').addEventListener('click', () => transitionTo('hunt'));
-document.getElementById('start-puzzle-btn').addEventListener('click', () => transitionTo('puzzle'));
+/* Place planets in orbit-like positions (responsive) */
+.orbit-wrap .planet:nth-child(1) { left: 5%; top: 12%; }
+.orbit-wrap .planet:nth-child(2) { right: 8%; top: 16%; }
+.orbit-wrap .planet:nth-child(3) { left: 12%; bottom: 8%; }
+.orbit-wrap .planet:nth-child(4) { right: 14%; bottom: 12%; }
+.orbit-wrap .planet:nth-child(5) { left: 42%; top: 4%; }
+.orbit-wrap .planet:nth-child(6) { left: 46%; bottom: 2%; }
 
-// ============================================================
-//   MENU UPDATE
-// ============================================================
-function updateMenu() {
-  if (state.quizCompleted) document.getElementById('dot-quiz').classList.add('complete');
-  if (state.huntCompleted) document.getElementById('dot-hunt').classList.add('complete');
-  if (state.puzzleCompleted) document.getElementById('dot-puzzle').classList.add('complete');
-  if (state.quizCompleted && state.huntCompleted && state.puzzleCompleted) {
-    document.getElementById('finale-btn').classList.remove('hidden');
-  }
+/* Story */
+.panel-title {
+  text-align: center;
+  font-size: clamp(24px, 4.6vw, 40px);
+  margin: 6px 0 12px;
+  background: linear-gradient(180deg, #fff, #f4e8ff 50%, #d9c4ff 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
 
-document.getElementById('finale-btn').addEventListener('click', () => transitionTo('finale'));
+.cards-grid {
+  display: grid;
+  grid-template-columns: repeat( auto-fit, minmax(240px, 1fr) );
+  gap: 18px;
+  width: min(1100px, 96vw);
+  margin: 0 auto;
+}
+.memory-card {
+  perspective: 1200px;
+  position: relative;
+  height: 280px;
+}
+.memory-card .card-inner {
+  height: 100%;
+  transform-style: preserve-3d;
+  transition: transform 0.9s cubic-bezier(.2,.7,.1,1);
+  border-radius: 16px;
+}
+.memory-card:hover .card-inner { transform: rotateY(180deg); }
 
-// ============================================================
-//   LOVE QUIZ GAME
-// ============================================================
-function initQuizGame() {
-  quizIndex = 0; quizScore = 0;
-  document.getElementById('quiz-result').classList.add('hidden');
-  document.getElementById('quiz-question-container').classList.remove('hidden');
-  renderQuestion();
+.card-face {
+  position: absolute;
+  inset: 0;
+  backface-visibility: hidden;
+  overflow: hidden;
+  border-radius: 16px;
+  border: 1px solid rgba(255,255,255,0.15);
+  background: rgba(255,255,255,0.04);
+  box-shadow: 0 10px 40px rgba(0,0,0,0.35);
+  display: grid;
+  align-content: end;
+}
+.card-front {
+  padding: 12px;
+}
+.card-front img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter: contrast(0.92) saturate(1.1) brightness(0.95);
+}
+.card-front h3 {
+  position: relative;
+  z-index: 2;
+  margin: 0;
+  padding: 8px 10px;
+  border-radius: 10px;
+  background: linear-gradient(180deg, rgba(0,0,0,0.25), rgba(0,0,0,0.5));
+  border: 1px solid rgba(255,255,255,0.12);
+  backdrop-filter: blur(10px);
+  width: fit-content;
+}
+.card-back {
+  padding: 18px;
+  transform: rotateY(180deg);
+  align-content: center;
+  text-align: center;
+  line-height: 1.6;
 }
 
-function renderQuestion() {
-  const fill = document.getElementById('quiz-progress-fill');
-  fill.style.width = ((quizIndex / quizQuestions.length) * 100) + '%';
-  document.getElementById('quiz-score').textContent = quizScore;
+/* Quiz */
+.howto {
+  width: min(800px, 94vw);
+  padding: 18px 18px 22px;
+  text-align: center;
+}
+.quiz-core {
+  width: min(820px, 94vw);
+  margin-inline: auto;
+  display: grid;
+  gap: 22px;
+}
+.progress-wrap {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.progress {
+  flex: 1;
+  height: 10px;
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 999px;
+  overflow: hidden;
+}
+.progress-bar {
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, #7effd4, #78e7ff, #b59bff);
+  transition: width 400ms ease;
+}
+.q-wrap {
+  background: linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.03));
+  border: 1px solid rgba(255,255,255,0.15);
+  border-radius: 16px;
+  padding: 18px;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.35);
+}
+.options {
+  display: grid;
+  gap: 10px;
+  margin-top: 10px;
+}
+.opt {
+  width: 100%;
+  padding: 12px;
+  border-radius: 12px;
+  background: rgba(255,255,255,0.08);
+  color: var(--text);
+  border: 1px solid rgba(255,255,255,0.12);
+  cursor: pointer;
+  text-align: left;
+  transition: transform 0.12s ease, background 0.2s ease, border-color 0.2s ease;
+}
+.opt:hover { transform: translateY(-1px); }
+.opt.correct {
+  border-color: rgba(110, 241, 200, 0.9);
+  box-shadow: 0 0 20px rgba(110, 241, 200, 0.35);
+}
+.opt.wrong {
+  border-color: rgba(255, 90, 140, 0.9);
+  box-shadow: 0 0 20px rgba(255, 90, 140, 0.35);
+}
+.result-title { font-size: 24px; margin: 0 0 8px; }
+.quiz-finish { text-align: center; }
 
-  if (quizIndex >= quizQuestions.length) { showQuizResult(); return; }
+/* Hunt */
+.hunt-core {
+  display: grid;
+  gap: 12px;
+  width: min(1000px, 96vw);
+  margin-inline: auto;
+}
+.hud {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  justify-content: space-between;
+}
+.hunt-stage {
+  position: relative;
+  height: min(56vh, 460px);
+  border-radius: 18px;
+  border: 1px solid rgba(255,255,255,0.15);
+  background: radial-gradient(700px 400px at 50% 20%, rgba(255,255,255,0.05), rgba(255,255,255,0.02));
+  overflow: hidden;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.35);
+}
+.letter {
+  position: absolute;
+  font-weight: 900;
+  font-size: clamp(18px, 4vw, 38px);
+  color: #fff;
+  text-shadow: 0 4px 18px rgba(255, 110, 180, 0.4);
+  padding: 6px 10px;
+  border-radius: 10px;
+  background: linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.03));
+  border: 1px solid rgba(255,255,255,0.2);
+  cursor: pointer;
+  user-select: none;
+  transition: transform 120ms ease, filter 200ms ease;
+}
+.letter:hover { transform: scale(1.1); filter: brightness(1.15); }
 
-  const q = quizQuestions[quizIndex];
-  document.getElementById('quiz-question-text').textContent = q.q;
-  const optionsEl = document.getElementById('quiz-options');
-  optionsEl.innerHTML = '';
-  q.options.forEach((opt, i) => {
-    const btn = document.createElement('button');
-    btn.className = 'quiz-option';
-    btn.textContent = opt;
-    btn.addEventListener('click', () => handleAnswer(i, btn));
-    optionsEl.appendChild(btn);
-  });
+.collected { text-align: center; }
+.collected-line {
+  min-height: 32px;
+  letter-spacing: 1px;
+  word-break: break-word;
+  padding: 8px 10px;
+  display: inline-block;
+  border-radius: 12px;
+  border: 1px solid rgba(255,255,255,0.12);
+  background: rgba(255,255,255,0.04);
+}
+.final-message {
+  font-size: clamp(18px, 4.2vw, 34px);
+  font-weight: 800;
+  text-align: center;
+  background: linear-gradient(180deg, #fff, #ffd6f0 60%, #e7c2ff 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
 
-function handleAnswer(chosen, btn) {
-  const q = quizQuestions[quizIndex];
-  const allOpts = document.querySelectorAll('.quiz-option');
-  allOpts.forEach(o => o.classList.add('disabled'));
-
-  if (chosen === q.correct) {
-    btn.classList.add('correct');
-    quizScore++;
-    spawnFloatingHeart(btn);
-  } else {
-    btn.classList.add('wrong');
-    allOpts[q.correct].classList.add('correct');
-  }
-  quizIndex++;
-  setTimeout(renderQuestion, 1200);
+/* Letter (paper) */
+.paper {
+  width: min(900px, 94vw);
+  margin: 0 auto;
+  padding: 24px 18px;
+  display: grid;
+  place-items: center;
+}
+.paper-inner {
+  width: 100%;
+  padding: 24px;
+  border-radius: 16px;
+  background:
+    radial-gradient(100% 100% at 50% 0%, rgba(255,255,255,0.7), rgba(255,255,255,0.45)),
+    #fff;
+  color: #2b1b3f;
+  border: 1px solid rgba(20, 5, 44, 0.15);
+  box-shadow: 0 25px 80px rgba(0,0,0,0.25);
+  font-family: "Playfair Display", Georgia, serif;
+  line-height: 1.75;
+  position: relative;
+  overflow: hidden;
+}
+.paper-inner:before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(600px 200px at -10% -20%, rgba(255, 170, 210, 0.25), transparent 60%),
+    radial-gradient(600px 200px at 110% 120%, rgba(200, 170, 255, 0.25), transparent 60%);
+  pointer-events: none;
+}
+.typewriter-block p {
+  opacity: 0;
+  transform: translateY(8px);
+  transition: opacity 0.7s ease, transform 0.7s ease;
+  margin: 8px 0;
+}
+.typewriter-block p.show {
+  opacity: 1;
+  transform: translateY(0);
 }
 
-function showQuizResult() {
-  document.getElementById('quiz-question-container').classList.add('hidden');
-  const result = document.getElementById('quiz-result');
-  result.classList.remove('hidden');
-  const pct = quizScore / quizQuestions.length;
-  let title = pct >= 0.8 ? "Perfect Love Score! 💖" : pct >= 0.5 ? "You Know Me Well! 💕" : "Keep Learning About Us! 💝";
-  document.getElementById('result-title').textContent = title;
-  document.getElementById('result-score').textContent = `${quizScore}/${quizQuestions.length} correct`;
-  document.getElementById('quiz-progress-fill').style.width = '100%';
-  launchConfetti();
-  state.quizCompleted = true;
-  unlockAchievement("Quiz Master", "You completed the Love Quiz! 💘");
-  updateMenu();
+/* Dreams (Future) */
+.dreams {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 14px;
+  width: min(900px, 94vw);
+  margin: 0 auto;
+}
+.dream-card {
+  border-radius: 16px;
+  border: 1px solid rgba(255,255,255,0.12);
+  background: linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.03));
+  overflow: hidden;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.35);
+}
+.dream-toggle {
+  width: 100%;
+  text-align: left;
+  padding: 14px 16px;
+  background: transparent;
+  color: var(--text);
+  border: 0;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+  font-weight: 800;
+}
+.dream-body {
+  height: 0;
+  overflow: hidden;
+  transition: height 450ms ease;
+  padding: 0 16px;
+}
+.dream-body.open { padding-bottom: 14px; }
+.dream-body img {
+  width: 100%;
+  height: auto;
+  border-radius: 12px;
+  margin: 10px 0;
 }
 
-document.getElementById('quiz-done-btn').addEventListener('click', () => {
-  updateVault();
-  transitionTo('quiz');
-});
-
-function spawnFloatingHeart(el) {
-  const rect = el.getBoundingClientRect();
-  const h = document.createElement('div');
-  h.textContent = '❤️';
-  h.style.cssText = `position:fixed;left:${rect.left+rect.width/2}px;top:${rect.top}px;font-size:1.5rem;pointer-events:none;z-index:1000;animation:heartRise 1s ease forwards;`;
-  document.body.appendChild(h);
-  const style = document.createElement('style');
-  style.textContent = `@keyframes heartRise{0%{opacity:1;transform:translateY(0) scale(1);}100%{opacity:0;transform:translateY(-60px) scale(1.5);}}`;
-  document.head.appendChild(style);
-  setTimeout(() => h.remove(), 1000);
+/* Finale */
+.finale-inner {
+  width: min(980px, 96vw);
+  text-align: center;
+  display: grid;
+  gap: 18px;
+  margin: 0 auto;
+}
+.finale-seq .tw-line {
+  font-size: clamp(16px, 2.2vw, 22px);
+}
+.finale-photo img {
+  width: 100%;
+  height: auto;
+  border-radius: 16px;
+  border: 1px solid rgba(255,255,255,0.15);
+  box-shadow: 0 10px 50px rgba(0,0,0,0.35);
+}
+.finale-text p {
+  font-size: clamp(16px, 2.2vw, 22px);
+  margin: 10px 0;
+}
+.finale-sign {
+  font-family: "Playfair Display", Georgia, serif;
+  font-size: clamp(18px, 3vw, 28px);
+  color: var(--gold);
+  text-shadow: 0 0 18px rgba(255, 204, 102, 0.4);
 }
 
-// ============================================================
-//   HEART HUNT
-// ============================================================
-document.getElementById('hunt-start-btn').addEventListener('click', startHuntGame);
-document.getElementById('hunt-retry-btn').addEventListener('click', () => {
-  document.getElementById('hunt-end-overlay').classList.add('hidden');
-  startHuntGame();
-});
-
-function startHuntGame() {
-  huntScore = 0; huntTimer = 30; huntActive = true;
-  document.getElementById('hunt-score').textContent = '0';
-  document.getElementById('hunt-timer').textContent = '30';
-  document.getElementById('hunt-start-overlay').classList.add('hidden');
-  document.getElementById('hunt-end-overlay').classList.add('hidden');
-  document.getElementById('hunt-arena').innerHTML = '';
-
-  huntInterval = setInterval(() => {
-    huntTimer--;
-    document.getElementById('hunt-timer').textContent = huntTimer;
-    if (huntTimer <= 0) endHunt(false);
-  }, 1000);
-
-  huntHeartInterval = setInterval(spawnHeart, 600);
-  for (let i = 0; i < 5; i++) spawnHeart();
+/* Vignette overlay */
+#vignette {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(1200px 600px at 50% 20%, rgba(255,255,255,0.08), transparent 50%),
+    radial-gradient(1200px 800px at 50% 120%, rgba(255,255,255,0.04), transparent 55%),
+    radial-gradient(120% 120% at 50% 50%, transparent 60%, rgba(0,0,0,0.6));
+  z-index: 2;
 }
 
-function spawnHeart() {
-  if (!huntActive) return;
-  const arena = document.getElementById('hunt-arena');
-  const h = document.createElement('div');
-  h.className = 'hunt-heart';
-  h.textContent = ['❤️','💕','💖','💝','💗'][Math.floor(Math.random()*5)];
-  h.style.left = (5 + Math.random() * 85) + '%';
-  h.style.animationDuration = (3 + Math.random() * 4) + 's';
-  h.style.animationDelay = (Math.random() * 1) + 's';
-  h.addEventListener('click', () => {
-    if (!huntActive) return;
-    // Pop effect
-    const pop = document.createElement('div');
-    pop.className = 'heart-pop';
-    pop.textContent = '💥';
-    pop.style.left = h.style.left;
-    pop.style.top = h.getBoundingClientRect().top + 'px';
-    arena.appendChild(pop);
-    setTimeout(() => pop.remove(), 500);
-    h.remove();
-    huntScore++;
-    document.getElementById('hunt-score').textContent = huntScore;
-    if (huntScore >= 15) endHunt(true);
-  });
-  arena.appendChild(h);
-  setTimeout(() => { if (h.parentNode) h.remove(); }, 8000);
+/* Background canvases */
+#bg-stars, #fx-canvas {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+}
+#fx-canvas { z-index: 4; pointer-events: none; }
+
+/* Custom cursor */
+#cursor-core, #cursor-ring {
+  position: fixed;
+  inset: 0 auto auto 0;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 6;
+  mix-blend-mode: screen;
+}
+#cursor-core {
+  background: radial-gradient(10px 10px at 50% 50%, #ff9fd8, #b36bff 80%);
+  filter: blur(0.5px);
+  transform: translate(-50%, -50%);
+}
+#cursor-ring {
+  width: 36px; height: 36px;
+  background: radial-gradient(20px 20px at 50% 50%, rgba(255,120,200,0.45), rgba(80,0,120,0.2));
+  border: 1px solid rgba(255,255,255,0.25);
+  filter: blur(0.4px);
+  transform: translate(-50%, -50%);
+  transition: width 180ms ease, height 180ms ease, background 220ms ease, transform 100ms ease;
 }
 
-function endHunt(won) {
-  huntActive = false;
-  clearInterval(huntInterval);
-  clearInterval(huntHeartInterval);
-  document.getElementById('hunt-arena').innerHTML = '';
+/* Magnetic hover target */
+.magnetic { position: relative; }
 
-  const overlay = document.getElementById('hunt-end-overlay');
-  overlay.classList.remove('hidden');
-
-  if (won) {
-    document.getElementById('hunt-end-title').textContent = '🎉 You Won!';
-    document.getElementById('hunt-end-desc').textContent = `You caught all 15 hearts! ❤️ Reward unlocked!`;
-    state.huntCompleted = true;
-    unlockAchievement("Heart Catcher", "All 15 hearts caught! 💝");
-    launchConfetti();
-    updateMenu();
-    setTimeout(() => transitionTo('quiz'), 2500);
-  } else {
-    document.getElementById('hunt-end-title').textContent = '⏰ Time\'s Up!';
-    document.getElementById('hunt-end-desc').textContent = `You caught ${huntScore}/15 hearts. Try again!`;
-  }
+/* Accessibility and small devices */
+@media (hover: none) and (pointer: coarse) {
+  #cursor-core, #cursor-ring { display: none; }
+}
+@media (max-width: 640px) {
+  .orbit-wrap { height: 64vh; }
+  .planet { min-width: 110px; }
+  .heart-core { transform: scale(0.9); }
 }
 
-// ============================================================
-//   SLIDING PUZZLE
-// ============================================================
-function initPuzzle() {
-  puzzleMoves = 0;
-  document.getElementById('puzzle-moves').textContent = '0';
-  document.getElementById('puzzle-complete').classList.add('hidden');
-  resetPuzzle();
-  renderPuzzle();
+/* Anim helpers */
+.fade-in { animation: fadeIn 700ms ease both; }
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
 }
-
-function resetPuzzle() {
-  const n = puzzleSize * puzzleSize;
-  puzzleState = Array.from({length: n - 1}, (_, i) => i + 1);
-  puzzleState.push(0); // 0 = empty
-  shufflePuzzle();
-}
-
-function shufflePuzzle() {
-  for (let i = 0; i < 200; i++) {
-    const emptyIdx = puzzleState.indexOf(0);
-    const moves = getPossibleMoves(emptyIdx);
-    const move = moves[Math.floor(Math.random() * moves.length)];
-    [puzzleState[emptyIdx], puzzleState[move]] = [puzzleState[move], puzzleState[emptyIdx]];
-  }
-}
-
-function getPossibleMoves(emptyIdx) {
-  const moves = [];
-  const row = Math.floor(emptyIdx / puzzleSize), col = emptyIdx % puzzleSize;
-  if (row > 0) moves.push(emptyIdx - puzzleSize);
-  if (row < puzzleSize - 1) moves.push(emptyIdx + puzzleSize);
-  if (col > 0) moves.push(emptyIdx - 1);
-  if (col < puzzleSize - 1) moves.push(emptyIdx + 1);
-  return moves;
-}
-
-function renderPuzzle() {
-  const board = document.getElementById('puzzle-board');
-  board.innerHTML = '';
-  puzzleState.forEach((val, idx) => {
-    const tile = document.createElement('div');
-    tile.className = 'puzzle-tile' + (val === 0 ? ' empty' : '');
-    tile.textContent = val === 0 ? '' : puzzleEmojis[val - 1];
-    if (val !== 0 && val === idx + 1) tile.classList.add('correct');
-    tile.addEventListener('click', () => moveTile(idx));
-    board.appendChild(tile);
-  });
-}
-
-function moveTile(idx) {
-  const emptyIdx = puzzleState.indexOf(0);
-  const moves = getPossibleMoves(emptyIdx);
-  if (!moves.includes(idx)) return;
-  [puzzleState[emptyIdx], puzzleState[idx]] = [puzzleState[idx], puzzleState[emptyIdx]];
-  puzzleMoves++;
-  document.getElementById('puzzle-moves').textContent = puzzleMoves;
-  renderPuzzle();
-  checkPuzzleSolved();
-}
-
-function checkPuzzleSolved() {
-  const solved = puzzleState.every((val, i) =>
-    i === puzzleSize * puzzleSize - 1 ? val === 0 : val === i + 1
-  );
-  if (solved) {
-    setTimeout(() => {
-      document.getElementById('puzzle-complete').classList.remove('hidden');
-      launchConfetti();
-      state.puzzleCompleted = true;
-      unlockAchievement("Puzzle Solver", "The puzzle is complete! 🧩");
-      updateMenu();
-    }, 300);
-  }
-}
-
-document.getElementById('puzzle-shuffle').addEventListener('click', () => {
-  shufflePuzzle();
-  puzzleMoves = 0;
-  document.getElementById('puzzle-moves').textContent = '0';
-  document.getElementById('puzzle-complete').classList.add('hidden');
-  renderPuzzle();
-});
-
-document.getElementById('puzzle-done-btn').addEventListener('click', () => {
-  updateVault();
-  transitionTo('quiz');
-});
-
-// ============================================================
-//   SECRET LETTER
-// ============================================================
-function initLetter() {
-  const el = document.getElementById('letter-text');
-  const sig = document.getElementById('letter-sig');
-  el.textContent = '';
-  sig.classList.add('hidden');
-  let i = 0;
-  const chars = letterContent.split('');
-
-  function typeLetter() {
-    if (i < chars.length) {
-      if (chars[i] === '\n') el.innerHTML += '<br/>';
-      else el.textContent += chars[i];
-      i++;
-      setTimeout(typeLetter, chars[i-1] === '\n' ? 200 : 28);
-    } else {
-      sig.classList.remove('hidden');
-      unlockAchievement("Love Letter Read", "The words of the heart 💌");
-    }
-  }
-  setTimeout(typeLetter, 400);
-}
-
-// ============================================================
-//   FUTURE TOGETHER
-// ============================================================
-function initFuture() {
-  const cards = document.querySelectorAll('.future-card');
-  cards.forEach((card, i) => {
-    setTimeout(() => card.classList.add('visible'), i * 150);
-  });
-}
-
-// ============================================================
-//   GRAND FINALE
-// ============================================================
-function initFinale() {
-  createFinalStarField();
-  runFinaleCinematic();
-  startFireworks();
-}
-
-function createFinalStarField() {
-  const field = document.getElementById('finale-star-field');
-  for (let i = 0; i < 200; i++) {
-    const s = document.createElement('div');
-    s.className = 'finale-star';
-    const size = Math.random() * 3 + 1;
-    s.style.cssText = `
-      width:${size}px; height:${size}px;
-      left:${Math.random()*100}%;
-      top:${Math.random()*100}%;
-      animation-duration:${2+Math.random()*3}s;
-      animation-delay:${Math.random()*4}s;
-      opacity:0;
-    `;
-    field.appendChild(s);
-    setTimeout(() => { s.style.opacity = '0.2'; }, 100 + Math.random() * 3000);
-  }
-}
-
-function runFinaleCinematic() {
-  const linesContainer = document.getElementById('finale-lines');
-  const lines = [
-    "You solved every challenge...",
-    "You found every heart...",
-    "You read every word...",
-    "Which means you've unlocked the final surprise ❤️"
-  ];
-
-  lines.forEach((text, i) => {
-    const div = document.createElement('div');
-    div.className = 'finale-line';
-    div.textContent = text;
-    linesContainer.appendChild(div);
-  });
-
-  const divs = linesContainer.querySelectorAll('.finale-line');
-  divs.forEach((div, i) => {
-    setTimeout(() => div.classList.add('reveal'), 1500 + i * 2000);
-  });
-
-  setTimeout(() => {
-    linesContainer.style.opacity = '0';
-    linesContainer.style.transition = 'opacity 1s ease';
-    const gift = document.getElementById('finale-gift');
-    gift.classList.remove('hidden');
-    gift.style.opacity = '0';
-    gift.style.transition = 'opacity 1.5s ease, transform 1.5s ease';
-    gift.style.transform = 'scale(0.5)';
-    setTimeout(() => {
-      gift.style.opacity = '1';
-      gift.style.transform = 'scale(1)';
-    }, 100);
-  }, 1500 + lines.length * 2000 + 1500);
-}
-
-document.getElementById('finale-gift').addEventListener('click', () => {
-  document.getElementById('finale-cinematic').style.opacity = '0';
-  document.getElementById('finale-cinematic').style.transition = 'opacity 1s ease';
-
-  setTimeout(() => {
-    document.getElementById('finale-cinematic').style.display = 'none';
-    const reveal = document.getElementById('finale-reveal-text');
-    reveal.classList.remove('hidden');
-    reveal.style.opacity = '0';
-    reveal.style.transition = 'opacity 1.5s ease';
-    setTimeout(() => { reveal.style.opacity = '1'; }, 100);
-    launchConfetti(200);
-    startSlideshow();
-    unlockAchievement("Grand Finale!", "You unlocked the ultimate surprise! 🎉");
-  }, 1000);
-});
-
-function startSlideshow() {
-  const slides = document.querySelectorAll('.slide');
-  const dotsContainer = document.getElementById('slideshow-dots');
-  dotsContainer.innerHTML = '';
-  slides.forEach((_, i) => {
-    const d = document.createElement('div');
-    d.className = 'slide-dot' + (i === 0 ? ' active' : '');
-    d.addEventListener('click', () => goToSlide(i));
-    dotsContainer.appendChild(d);
-  });
-
-  slideInterval = setInterval(() => {
-    slideIndex = (slideIndex + 1) % slides.length;
-    goToSlide(slideIndex);
-  }, 3500);
-}
-
-function goToSlide(i) {
-  document.querySelectorAll('.slide').forEach((s, idx) => {
-    s.classList.toggle('active', idx === i);
-  });
-  document.querySelectorAll('.slide-dot').forEach((d, idx) => {
-    d.classList.toggle('active', idx === i);
-  });
-  slideIndex = i;
-}
-
-// ============================================================
-//   FIREWORKS
-// ============================================================
-const fwCanvas = document.getElementById('fireworks-canvas');
-const fwCtx = fwCanvas.getContext('2d');
-let fireworkParticles = [];
-
-function resizeFwCanvas() {
-  fwCanvas.width = window.innerWidth;
-  fwCanvas.height = window.innerHeight;
-}
-resizeFwCanvas();
-window.addEventListener('resize', resizeFwCanvas);
-
-function launchFirework() {
-  const startX = (0.2 + Math.random() * 0.6) * fwCanvas.width;
-  const startY = (0.2 + Math.random() * 0.4) * fwCanvas.height;
-  const colors = ['#f0c060', '#ff6eb4', '#b06cff', '#ff4040', '#40ff80', '#40c0ff', '#fffacd'];
-  const color = colors[Math.floor(Math.random() * colors.length)];
-  for (let i = 0; i < 60; i++) {
-    const angle = (i / 60) * Math.PI * 2;
-    const speed = 2 + Math.random() * 5;
-    fireworkParticles.push({
-      x: startX, y: startY,
-      vx: Math.cos(angle) * speed,
-      vy: Math.sin(angle) * speed,
-      color, life: 1, gravity: 0.08, size: 1.5 + Math.random() * 2
-    });
-  }
-}
-
-let fireworkActive = false;
-function startFireworks() {
-  fireworkActive = true;
-  resizeFwCanvas();
-  animateFireworks();
-  const launchLoop = setInterval(() => {
-    if (!fireworkActive) { clearInterval(launchLoop); return; }
-    launchFirework();
-  }, 700);
-}
-
-function animateFireworks() {
-  if (!fireworkActive) return;
-  fwCtx.fillStyle = 'rgba(0,0,0,0.12)';
-  fwCtx.fillRect(0, 0, fwCanvas.width, fwCanvas.height);
-
-  fireworkParticles = fireworkParticles.filter(p => p.life > 0);
-  fireworkParticles.forEach(p => {
-    p.x += p.vx;
-    p.y += p.vy;
-    p.vy += p.gravity;
-    p.vx *= 0.99;
-    p.life -= 0.016;
-    fwCtx.save();
-    fwCtx.globalAlpha = Math.max(0, p.life);
-    fwCtx.fillStyle = p.color;
-    fwCtx.shadowBlur = 6;
-    fwCtx.shadowColor = p.color;
-    fwCtx.beginPath();
-    fwCtx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
-    fwCtx.fill();
-    fwCtx.restore();
-  });
-  requestAnimationFrame(animateFireworks);
-}
-
-// ============================================================
-//   CONFETTI
-// ============================================================
-function launchConfetti(count = 80) {
-  const container = document.getElementById('confetti-container');
-  const colors = ['#f0c060', '#ff6eb4', '#b06cff', '#ff4040', '#40ff80', '#ffaaff', '#aaffff'];
-  const shapes = ['circle', 'square', 'heart'];
-
-  for (let i = 0; i < count; i++) {
-    const piece = document.createElement('div');
-    const color = colors[Math.floor(Math.random() * colors.length)];
-    const shape = shapes[Math.floor(Math.random() * shapes.length)];
-    const size = 8 + Math.random() * 8;
-    const left = Math.random() * 100;
-    const duration = 2 + Math.random() * 2;
-    const delay = Math.random() * 0.5;
-
-    piece.className = 'confetti-piece';
-    piece.style.cssText = `
-      left: ${left}%;
-      top: -20px;
-      width: ${size}px;
-      height: ${size}px;
-      background: ${shape !== 'heart' ? color : 'transparent'};
-      color: ${color};
-      font-size: ${size * 1.5}px;
-      border-radius: ${shape === 'circle' ? '50%' : '2px'};
-      animation-duration: ${duration}s;
-      animation-delay: ${delay}s;
-    `;
-    if (shape === 'heart') piece.textContent = '♥';
-    container.appendChild(piece);
-    setTimeout(() => piece.remove(), (duration + delay + 0.5) * 1000);
-  }
-}
-
-// ============================================================
-//   EASTER EGGS
-// ============================================================
-function createEasterEggs() {
-  const messages = [
-    "You found a star ⭐ (+1 love)",
-    "Secret discovered 💫",
-    "Hidden message: You're amazing! 💖",
-    "Easter egg found! 🥚✨",
-    "You're so curious 🌟 That's one of my favourite things about you"
-  ];
-  const positions = [
-    {top: '5%', left: '8%'},
-    {top: '15%', right: '6%'},
-    {bottom: '20%', left: '5%'},
-    {bottom: '10%', right: '8%'},
-    {top: '45%', left: '3%'}
-  ];
-
-  positions.forEach((pos, i) => {
-    const star = document.createElement('div');
-    star.className = 'easter-star';
-    star.textContent = '✦';
-    Object.assign(star.style, pos);
-    star.addEventListener('click', () => {
-      state.easterEggsFound++;
-      unlockAchievement("Easter Egg Found!", messages[i % messages.length]);
-      star.style.animation = 'none';
-      star.style.opacity = '0.6';
-      star.style.color = 'var(--gold)';
-    });
-    document.body.appendChild(star);
-  });
-}
-createEasterEggs();
-
-// Konami-style secret: type "love"
-let secretBuffer = '';
-document.addEventListener('keydown', e => {
-  secretBuffer = (secretBuffer + e.key).slice(-4);
-  if (secretBuffer === 'love') {
-    unlockAchievement("Love Spelt!", "You typed 'love' 💖 You ARE love.");
-    launchConfetti(50);
-    secretBuffer = '';
-  }
-});
-
-// ============================================================
-//   MOUSE GLOW EFFECT
-// ============================================================
-document.addEventListener('mousemove', e => {
-  const glow = document.createElement('div');
-  glow.style.cssText = `
-    position:fixed;
-    left:${e.clientX}px; top:${e.clientY}px;
-    width:6px; height:6px;
-    background: radial-gradient(circle, rgba(240,192,96,0.3), transparent);
-    border-radius:50%;
-    pointer-events:none;
-    z-index:9997;
-    transform:translate(-50%,-50%);
-    animation: mouseTrail 0.8s ease forwards;
-  `;
-  document.body.appendChild(glow);
-  setTimeout(() => glow.remove(), 800);
-});
-
-// Mouse trail CSS
-const trailStyle = document.createElement('style');
-trailStyle.textContent = `
-@keyframes mouseTrail {
-  0% { opacity: 0.6; transform: translate(-50%,-50%) scale(1); }
-  100% { opacity: 0; transform: translate(-50%,-50%) scale(3); }
-}
-`;
-document.head.appendChild(trailStyle);
-
-// ============================================================
-//   TOUCH SUPPORT (MOBILE)
-// ============================================================
-document.addEventListener('touchstart', e => {
-  cursor.style.display = 'none';
-  cursorGlow.style.display = 'none';
-}, { passive: true });
-
-// ============================================================
-//   INTERSECTION OBSERVER FOR ANIMATIONS
-// ============================================================
-const observer = new IntersectionObserver(entries => {
-  entries.forEach(entry => {
-    if (entry.isIntersecting) {
-      entry.target.classList.add('visible');
-    }
-  });
-}, { threshold: 0.1 });
-
-document.querySelectorAll('.future-card, .timeline-item').forEach(el => observer.observe(el));
-
-// ============================================================
-//   INITIALISE
-// ============================================================
-// Ensure intro is active
-setTimeout(() => {
-  document.getElementById('screen-intro').classList.add('active');
-}, 100);
