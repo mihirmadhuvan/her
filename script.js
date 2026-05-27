@@ -453,11 +453,18 @@ function nextQuestion() {
 
     // Regardless of visible message, unlock on secret condition:
     if (secretPass) {
-      STATE.unlockedOrder = Math.max(STATE.unlockedOrder, 3);
-    } else if (normalPass) {
-      // If she does well, also unlock (keeps experience smooth)
-      STATE.unlockedOrder = Math.max(STATE.unlockedOrder, 3);
-    }
+  STATE.unlockedOrder = Math.max(STATE.unlockedOrder, 3);
+
+  // refresh planets immediately
+  updatePlanetsLock();
+
+} else if (normalPass) {
+
+  STATE.unlockedOrder = Math.max(STATE.unlockedOrder, 3);
+
+  // refresh planets immediately
+  updatePlanetsLock();
+}
   } else {
     qs[quizIndex].classList.remove('hidden');
   }
@@ -662,14 +669,15 @@ function heartShower(n = 36) {
 
 /* ========= Overlay/Modal guards ========= */
 function stopAllOverlays() {
-  // Close quiz/hunt overlays if visible
-  quizHowto?.classList.add('hidden');
-  huntHowto?.classList.add('hidden');
-  // Reset states that must reopen with user action
-  quizFinish?.classList.add('hidden');
-  huntFinish?.classList.add('hidden');
+  // RESET QUIZ
+  quizHowto?.classList.remove('hidden');
   quizCore?.classList.add('hidden');
+  quizFinish?.classList.add('hidden');
+
+  // RESET HUNT
+  huntHowto?.classList.remove('hidden');
   huntCore?.classList.add('hidden');
+  huntFinish?.classList.add('hidden');
 }
 
 /* ========= Initialization ========= */
