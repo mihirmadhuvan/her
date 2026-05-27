@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Happy 2nd Anniversary ❤️</title>
+  <link rel="stylesheet" href="style.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Cinzel+Decorative:wght@400;700&family=Dancing+Script:wght@400;600;700&family=Lato:wght@300;400&display=swap" rel="stylesheet" />
+</head>
+<body>
+
+<!-- CUSTOM CURSOR -->
+<div id="cursor"></div>
+<div id="cursor-glow"></div>
+
+<!-- PARTICLE CANVAS -->
+<canvas id="particles-canvas"></canvas>
+
+<!-- ACHIEVEMENT TOAST -->
+<div id="achievement-toast">
+  <div class="achievement-icon">🏆</div>
+  <div class="achievement-text">
+    <div class="achievement-title">Achievement Unlocked!</div>
+    <div class="achievement-desc" id="achievement-desc"></div>
+  </div>
+</div>
+
+<!-- ===================== SCREEN 1: INTRO ===================== -->
+<div id="screen-intro" class="screen active">
+  <div class="intro-content">
+    <div class="intro-stars" id="intro-stars"></div>
+    <div id="typewriter-text" class="typewriter"></div>
+    <button id="enter-btn" class="enter-btn hidden">
+      <span class="enter-btn-text">Enter Our Universe ❤️</span>
+      <div class="btn-glow-ring"></div>
+    </button>
+  </div>
+</div>
+
+<!-- ===================== SCREEN 2: MAIN MENU ===================== -->
+<div id="screen-menu" class="screen">
+  <div class="menu-header">
+    <div class="menu-title">Our Universe</div>
+    <div class="menu-subtitle">Where every moment lives forever</div>
+  </div>
+  <div class="menu-grid">
+    <div class="menu-card" data-screen="story" data-delay="0">
+      <div class="card-glow"></div>
+      <div class="card-icon">📖</div>
+      <div class="card-title">Our Story</div>
+      <div class="card-desc">Journey through our timeline</div>
+      <div class="card-shimmer"></div>
+    </div>
+    <div class="menu-card" data-screen="vault" data-delay="100">
+      <div class="card-glow"></div>
+      <div class="card-icon">📸</div>
+      <div class="card-title">Memory Vault</div>
+      <div class="card-desc">Unlock precious memories</div>
+      <div class="card-shimmer"></div>
+    </div>
+    <div class="menu-card" data-screen="quiz" data-delay="200">
+      <div class="card-glow"></div>
+      <div class="card-icon">🎮</div>
+      <div class="card-title">Love Challenges</div>
+      <div class="card-desc">Three games await you</div>
+      <div class="card-shimmer"></div>
+    </div>
+    <div class="menu-card" data-screen="letters" data-delay="300">
+      <div class="card-glow"></div>
+      <div class="card-icon">💌</div>
+      <div class="card-title">Secret Letters</div>
+      <div class="card-desc">Words from the heart</div>
+      <div class="card-shimmer"></div>
+    </div>
+    <div class="menu-card" data-screen="future" data-delay="400">
+      <div class="card-glow"></div>
+      <div class="card-icon">🌙</div>
+      <div class="card-title">Future Together</div>
+      <div class="card-desc">Our dreams & promises</div>
+      <div class="card-shimmer"></div>
+    </div>
+  </div>
+  <!-- Progress tracker -->
+  <div class="progress-tracker">
+    <div class="tracker-label">Challenges Completed</div>
+    <div class="tracker-dots">
+      <div class="tracker-dot" id="dot-quiz" title="Love Quiz"></div>
+      <div class="tracker-dot" id="dot-hunt" title="Heart Hunt"></div>
+      <div class="tracker-dot" id="dot-puzzle" title="Memory Puzzle"></div>
+    </div>
+    <button id="finale-btn" class="finale-btn hidden">✨ Open Final Surprise</button>
+  </div>
+</div>
+
+<!-- ===================== SCREEN 3: OUR STORY ===================== -->
+<div id="screen-story" class="screen">
+  <button class="back-btn" data-back="menu">← Back</button>
+  <div class="section-title">Our Story</div>
+  <div class="timeline">
+    <div class="timeline-item" data-index="0">
+      <div class="timeline-dot"></div>
+      <div class="timeline-card" data-front="first-msg" data-back-content="0">
+        <div class="tcard-front">
+          <div class="tcard-emoji">💬</div>
+          <div class="tcard-label">First Conversation</div>
+          <div class="tcard-hint">Click to reveal</div>
+        </div>
+        <div class="tcard-back">
+          <div class="tcard-back-title">The First Words</div>
+          <div class="tcard-back-text">Remember the first time we talked? I was nervous but I couldn't stop smiling. Every message felt like magic. That conversation changed everything.</div>
+        </div>
+      </div>
+    </div>
+    <div class="timeline-item" data-index="1">
+      <div class="timeline-dot"></div>
+      <div class="timeline-card">
+        <div class="tcard-front">
+          <div class="tcard-emoji">👀</div>
+          <div class="tcard-label">First Meeting</div>
+          <div class="tcard-hint">Click to reveal</div>
+        </div>
+        <div class="tcard-back">
+          <div class="tcard-back-title">I Saw You</div>
+          <div class="tcard-back-text">The moment I saw you in person, everything I had imagined didn't compare. You were more beautiful, more real, more perfect than I could have dreamed.</div>
+        </div>
+      </div>
+    </div>
+    <div class="timeline-item" data-index="2">
+      <div class="timeline-dot"></div>
+      <div class="timeline-card">
+        <div class="tcard-front">
+          <div class="tcard-emoji">🌹</div>
+          <div class="tcard-label">First Date</div>
+          <div class="tcard-hint">Click to reveal</div>
+        </div>
+        <div class="tcard-back">
+          <div class="tcard-back-title">Our First Date</div>
+          <div class="tcard-back-text">I kept checking if I looked okay, kept worrying if you were having fun. But you laughed at everything, and I realised — this is it. This is who I want beside me.</div>
+        </div>
+      </div>
+    </div>
+    <div class="timeline-item" data-index="3">
+      <div class="timeline-dot"></div>
+      <div class="timeline-card">
+        <div class="tcard-front">
+          <div class="tcard-emoji">⭐</div>
+          <div class="tcard-label">Favourite Memory</div>
+          <div class="tcard-hint">Click to reveal</div>
+        </div>
+        <div class="tcard-back">
+          <div class="tcard-back-title">My Favourite Moment</div>
+          <div class="tcard-back-text">That one quiet evening when we just sat together, said nothing, and it felt like the whole world made sense. I've replayed it a thousand times in my heart.</div>
+        </div>
+      </div>
+    </div>
+    <div class="timeline-item" data-index="4">
+      <div class="timeline-dot"></div>
+      <div class="timeline-card">
+        <div class="tcard-front">
+          <div class="tcard-emoji">😂</div>
+          <div class="tcard-label">Funniest Moment</div>
+          <div class="tcard-hint">Click to reveal</div>
+        </div>
+        <div class="tcard-back">
+          <div class="tcard-back-title">We Laughed So Hard</div>
+          <div class="tcard-back-text">That time we both tried to be serious but completely lost it. Your laugh — that uncontrollable, genuine laugh — is genuinely one of my favourite sounds in the universe.</div>
+        </div>
+      </div>
+    </div>
+    <div class="timeline-item" data-index="5">
+      <div class="timeline-dot"></div>
+      <div class="timeline-card">
+        <div class="tcard-front">
+          <div class="tcard-emoji">💧</div>
+          <div class="tcard-label">Most Emotional Moment</div>
+          <div class="tcard-hint">Click to reveal</div>
+        </div>
+        <div class="tcard-back">
+          <div class="tcard-back-title">When I Knew</div>
+          <div class="tcard-back-text">There was a moment I looked at you and realised: I would choose you every single time. In every version of my life, in every universe — I would always find my way to you.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== SCREEN 4: MEMORY VAULT ===================== -->
+<div id="screen-vault" class="screen">
+  <button class="back-btn" data-back="menu">← Back</button>
+  <div class="section-title">Memory Vault</div>
+  <div class="vault-subtitle">Complete all challenges to unlock every box</div>
+  <div class="vault-grid">
+    <div class="vault-box" data-box="sad" data-requires="none">
+      <div class="box-lock-icon">💙</div>
+      <div class="box-title">Open When Sad</div>
+      <div class="box-status">Always Unlocked</div>
+      <div class="box-content hidden">
+        <p>Close your eyes. Take a breath. You are so incredibly loved. Every tear you cry, I wish I could take away. You are stronger than you know, and I am always, always here. It gets better — and I'll be beside you the whole time. 💙</p>
+      </div>
+    </div>
+    <div class="vault-box" data-box="angry" data-requires="none">
+      <div class="box-lock-icon">🔥</div>
+      <div class="box-title">Open When Angry</div>
+      <div class="box-status">Always Unlocked</div>
+      <div class="box-content hidden">
+        <p>I see you. Your feelings are valid. Take your time. When the storm passes, I'll still be here — not to fight, not to judge, just to hold you. You matter more than any argument ever could. 🔥❤️</p>
+      </div>
+    </div>
+    <div class="vault-box locked" data-box="missing" data-requires="quiz">
+      <div class="box-lock-icon">🔒</div>
+      <div class="box-title">Open When Missing Me</div>
+      <div class="box-status">Complete Love Quiz to unlock</div>
+      <div class="box-content hidden">
+        <p>Every time you miss me, know that I miss you twice as much. The distance means nothing — you are always with me. In every song, every sunset, every quiet moment. Always. 💜</p>
+      </div>
+    </div>
+    <div class="vault-box locked" data-box="anniversary" data-requires="all">
+      <div class="box-lock-icon">🔒</div>
+      <div class="box-title">Open On Anniversary</div>
+      <div class="box-status">Complete ALL challenges to unlock</div>
+      <div class="box-content hidden">
+        <p>Two years. 730 days of choosing each other. Every single day, you have made my life more beautiful, more full, more alive. This is just the beginning of forever. Happy Anniversary, my love. ❤️✨</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== SCREEN 5: CHALLENGES HUB ===================== -->
+<div id="screen-quiz" class="screen">
+  <button class="back-btn" data-back="menu">← Back</button>
+  <div class="section-title">Love Challenges</div>
+  <div class="challenges-grid">
+    <div class="challenge-card" id="challenge-quiz-card">
+      <div class="challenge-status-badge" id="quiz-badge">🎯</div>
+      <div class="challenge-icon">💘</div>
+      <div class="challenge-title">Love Quiz</div>
+      <div class="challenge-desc">Answer questions about us</div>
+      <button class="challenge-btn" id="start-quiz-btn">Play Now</button>
+    </div>
+    <div class="challenge-card" id="challenge-hunt-card">
+      <div class="challenge-status-badge" id="hunt-badge">🎯</div>
+      <div class="challenge-icon">💝</div>
+      <div class="challenge-title">Heart Hunt</div>
+      <div class="challenge-desc">Catch 15 hearts in time</div>
+      <button class="challenge-btn" id="start-hunt-btn">Play Now</button>
+    </div>
+    <div class="challenge-card" id="challenge-puzzle-card">
+      <div class="challenge-status-badge" id="puzzle-badge">🎯</div>
+      <div class="challenge-icon">🧩</div>
+      <div class="challenge-title">Memory Puzzle</div>
+      <div class="challenge-desc">Solve the sliding puzzle</div>
+      <button class="challenge-btn" id="start-puzzle-btn">Play Now</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== SCREEN 6: LOVE QUIZ ===================== -->
+<div id="screen-quiz-game" class="screen">
+  <button class="back-btn" data-back="quiz">← Back</button>
+  <div class="section-title">Love Quiz 💘</div>
+  <div class="quiz-container">
+    <div class="quiz-progress-bar"><div id="quiz-progress-fill"></div></div>
+    <div class="quiz-score-label">Score: <span id="quiz-score">0</span></div>
+    <div id="quiz-question-container">
+      <div id="quiz-question-text" class="quiz-question"></div>
+      <div id="quiz-options" class="quiz-options"></div>
+    </div>
+    <div id="quiz-result" class="quiz-result hidden">
+      <div class="result-stars">⭐⭐⭐</div>
+      <div class="result-title" id="result-title"></div>
+      <div class="result-score" id="result-score"></div>
+      <button class="challenge-btn" id="quiz-done-btn">Continue ❤️</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== SCREEN 7: HEART HUNT ===================== -->
+<div id="screen-hunt" class="screen">
+  <button class="back-btn" data-back="quiz">← Back</button>
+  <div class="hunt-ui">
+    <div class="hunt-header">
+      <div class="hunt-stat">Hearts: <span id="hunt-score">0</span>/15</div>
+      <div class="hunt-title">Heart Hunt 💝</div>
+      <div class="hunt-stat">Time: <span id="hunt-timer">30</span>s</div>
+    </div>
+    <div id="hunt-start-overlay" class="hunt-overlay">
+      <div class="overlay-title">Heart Hunt</div>
+      <div class="overlay-desc">Catch 15 hearts before time runs out!</div>
+      <button class="challenge-btn" id="hunt-start-btn">Start Game</button>
+    </div>
+    <div id="hunt-end-overlay" class="hunt-overlay hidden">
+      <div class="overlay-title" id="hunt-end-title"></div>
+      <div class="overlay-desc" id="hunt-end-desc"></div>
+      <button class="challenge-btn" id="hunt-retry-btn">Try Again</button>
+    </div>
+    <div id="hunt-arena"></div>
+  </div>
+</div>
+
+<!-- ===================== SCREEN 8: SLIDING PUZZLE ===================== -->
+<div id="screen-puzzle" class="screen">
+  <button class="back-btn" data-back="quiz">← Back</button>
+  <div class="section-title">Memory Puzzle 🧩</div>
+  <div class="puzzle-container">
+    <div class="puzzle-info">
+      <span>Moves: <span id="puzzle-moves">0</span></span>
+      <button class="puzzle-shuffle-btn" id="puzzle-shuffle">Shuffle</button>
+    </div>
+    <div id="puzzle-board"></div>
+    <div id="puzzle-complete" class="puzzle-complete hidden">
+      <div class="complete-title">✨ Puzzle Complete! ✨</div>
+      <div class="complete-subtitle">You revealed a hidden memory!</div>
+      <div class="complete-image">💖</div>
+      <button class="challenge-btn" id="puzzle-done-btn">Claim Reward ❤️</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== SCREEN 9: SECRET LETTERS ===================== -->
+<div id="screen-letters" class="screen">
+  <button class="back-btn" data-back="menu">← Back</button>
+  <div class="letter-scene">
+    <div class="letter-paper">
+      <div class="letter-date">To My Love,</div>
+      <div id="letter-text" class="letter-body"></div>
+      <div class="letter-signature hidden" id="letter-sig">
+        Forever yours,<br/>
+        <span class="sig-name">Your Person ❤️</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== SCREEN 10: FUTURE TOGETHER ===================== -->
+<div id="screen-future" class="screen">
+  <button class="back-btn" data-back="menu">← Back</button>
+  <div class="section-title">Future Together 🌙</div>
+  <div class="future-grid">
+    <div class="future-card" data-index="0">
+      <div class="future-icon">✈️</div>
+      <div class="future-title">Travel Together</div>
+      <div class="future-text">Every corner of this world becomes magical when you're beside me. Let's collect sunsets from every country.</div>
+    </div>
+    <div class="future-card" data-index="1">
+      <div class="future-icon">🏠</div>
+      <div class="future-title">Our Own Space</div>
+      <div class="future-text">A home that smells like coffee in the morning and feels like safety every night. Built on love and laughter.</div>
+    </div>
+    <div class="future-card" data-index="2">
+      <div class="future-icon">🌱</div>
+      <div class="future-title">Growing Together</div>
+      <div class="future-text">I want to grow with you — to become better versions of ourselves, side by side, always.</div>
+    </div>
+    <div class="future-card" data-index="3">
+      <div class="future-icon">🎂</div>
+      <div class="future-title">Infinite Anniversaries</div>
+      <div class="future-text">Year 2 is just the beginning. I plan to celebrate every single year with you for the rest of my life.</div>
+    </div>
+    <div class="future-card" data-index="4">
+      <div class="future-icon">🌟</div>
+      <div class="future-title">Our Dreams</div>
+      <div class="future-text">Every dream you have, I want to help make real. Your joy is my greatest mission.</div>
+    </div>
+    <div class="future-card" data-index="5">
+      <div class="future-icon">💞</div>
+      <div class="future-title">Forever</div>
+      <div class="future-text">In every lifetime, every universe, every story — I would always choose you. Always.</div>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== SCREEN 11: GRAND FINALE ===================== -->
+<div id="screen-finale" class="screen">
+  <canvas id="fireworks-canvas"></canvas>
+  <div class="finale-content">
+    <div id="finale-reveal-text" class="finale-reveal hidden">
+      <div class="finale-big-title">🎉 Happy 2nd Anniversary My Love ❤️ 🎉</div>
+      <div class="finale-message">
+        Thank you for every smile, every memory, every moment.<br/>
+        Two years of you is the greatest gift I've ever received.<br/>
+        Here's to forever. 💖
+      </div>
+      <div class="slideshow-container" id="slideshow">
+        <div class="slide active">
+          <div class="slide-memory">💬 First Conversation</div>
+          <div class="slide-text">"The message that changed everything"</div>
+        </div>
+        <div class="slide">
+          <div class="slide-memory">🌹 First Date</div>
+          <div class="slide-text">"The night I knew you were the one"</div>
+        </div>
+        <div class="slide">
+          <div class="slide-memory">😂 Every Laugh</div>
+          <div class="slide-text">"Your laugh is my favourite sound"</div>
+        </div>
+        <div class="slide">
+          <div class="slide-memory">💙 Every Hug</div>
+          <div class="slide-text">"Home is wherever you are"</div>
+        </div>
+        <div class="slide">
+          <div class="slide-memory">✨ Two Years</div>
+          <div class="slide-text">"And counting forever..."</div>
+        </div>
+      </div>
+      <div class="slideshow-dots" id="slideshow-dots"></div>
+    </div>
+
+    <!-- Pre-reveal cinematic -->
+    <div id="finale-cinematic" class="finale-cinematic">
+      <div id="finale-star-field"></div>
+      <div id="finale-lines" class="finale-lines"></div>
+      <div id="finale-gift" class="finale-gift hidden">
+        <div class="gift-box">
+          <div class="gift-lid">🎁</div>
+          <div class="gift-glow-ring"></div>
+        </div>
+        <div class="gift-label">Click to open ❤️</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- CONFETTI CONTAINER -->
+<div id="confetti-container"></div>
+
+<script src="script.js"></script>
+</body>
+</html>
