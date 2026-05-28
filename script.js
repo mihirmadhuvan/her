@@ -113,15 +113,38 @@ function spawnStars() {
   }));
 }
 function renderStars() {
+
   starCtx.clearRect(0, 0, W, H);
+
   for (const st of stars) {
+
+    st.y += st.s * 0.12;
+
+    if (st.y > H) {
+      st.y = 0;
+      st.x = Math.random() * W;
+    }
+
     st.a += 0.015 * st.s;
+
     const tw = 0.7 + Math.sin(st.a) * 0.3;
+
     starCtx.beginPath();
-    starCtx.fillStyle = `rgba(255, 220, 255, ${0.25 * tw})`;
-    starCtx.arc(st.x, st.y, st.r * (0.9 + 0.2 * tw), 0, Math.PI * 2);
+
+    starCtx.fillStyle =
+      `rgba(255,255,255,${0.35 * tw})`;
+
+    starCtx.arc(
+      st.x,
+      st.y,
+      st.r * (0.9 + 0.2 * tw),
+      0,
+      Math.PI * 2
+    );
+
     starCtx.fill();
   }
+
   requestAnimationFrame(renderStars);
 }
 
