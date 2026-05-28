@@ -625,3 +625,310 @@ h1, h2, h3 {
   from { opacity: 0; transform: translateY(8px); }
   to { opacity: 1; transform: translateY(0); }
 }
+/* =========================================================
+   CINEMATIC SOLAR SYSTEM UPGRADE
+========================================================= */
+
+/* Animated Deep Space Background */
+body::before {
+  content: "";
+  position: fixed;
+  inset: -20%;
+  z-index: -3;
+
+  background:
+    radial-gradient(circle at 20% 20%, rgba(255,120,200,0.12), transparent 22%),
+    radial-gradient(circle at 80% 30%, rgba(120,180,255,0.10), transparent 22%),
+    radial-gradient(circle at 50% 80%, rgba(180,120,255,0.10), transparent 25%),
+    radial-gradient(circle at center, #12051f 0%, #07040d 60%, #020104 100%);
+
+  animation: cosmicMove 30s linear infinite alternate;
+}
+
+@keyframes cosmicMove {
+  0% {
+    transform: scale(1) translate(0px,0px);
+  }
+
+  100% {
+    transform: scale(1.08) translate(-40px,-20px);
+  }
+}
+
+/* Universe Glow */
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -2;
+  pointer-events: none;
+
+  background:
+    radial-gradient(circle at center,
+      rgba(255,255,255,0.03),
+      transparent 60%);
+}
+
+/* Orbit Rings */
+.orbit-wrap::before,
+.orbit-wrap::after {
+  content: "";
+  position: absolute;
+  border-radius: 50%;
+  inset: 50%;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+
+.orbit-wrap::before {
+  width: 520px;
+  height: 520px;
+  border: 1px solid rgba(255,255,255,0.06);
+
+  box-shadow:
+    0 0 40px rgba(255,255,255,0.04);
+
+  animation: rotateRing 50s linear infinite;
+}
+
+.orbit-wrap::after {
+  width: 760px;
+  height: 760px;
+  border: 1px solid rgba(255,255,255,0.03);
+
+  animation: rotateRingReverse 80s linear infinite;
+}
+
+@keyframes rotateRing {
+  from {
+    transform: translate(-50%, -50%) rotate(0deg);
+  }
+
+  to {
+    transform: translate(-50%, -50%) rotate(360deg);
+  }
+}
+
+@keyframes rotateRingReverse {
+  from {
+    transform: translate(-50%, -50%) rotate(360deg);
+  }
+
+  to {
+    transform: translate(-50%, -50%) rotate(0deg);
+  }
+}
+
+/* Cinematic Heart Core */
+.heart-core {
+  animation:
+    pulseCore 4s ease-in-out infinite,
+    floatingHeart 8s ease-in-out infinite;
+
+  box-shadow:
+    0 0 60px rgba(255,100,180,0.35),
+    0 0 120px rgba(180,100,255,0.25),
+    0 0 220px rgba(255,100,200,0.18);
+}
+
+@keyframes pulseCore {
+  0%,100% {
+    transform: scale(1);
+  }
+
+  50% {
+    transform: scale(1.08);
+  }
+}
+
+@keyframes floatingHeart {
+  0%,100% {
+    translate: 0px 0px;
+  }
+
+  50% {
+    translate: 0px -10px;
+  }
+}
+
+/* Planet Enhancements */
+.planet {
+  backdrop-filter: blur(18px);
+
+  transition:
+    transform 0.35s ease,
+    box-shadow 0.35s ease,
+    filter 0.35s ease;
+
+  overflow: hidden;
+}
+
+/* Planet Shine */
+.planet::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+
+  background:
+    linear-gradient(
+      135deg,
+      rgba(255,255,255,0.28),
+      transparent 35%
+    );
+
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+/* Hover */
+.planet:hover {
+  transform: scale(1.12);
+
+  box-shadow:
+    0 0 40px rgba(255,120,200,0.45),
+    0 0 80px rgba(180,120,255,0.35);
+
+  filter: brightness(1.12);
+}
+
+/* Floating Planet Motion */
+.orbit-wrap .planet:nth-child(1) {
+  animation:
+    floatPlanet 6s ease-in-out infinite;
+}
+
+.orbit-wrap .planet:nth-child(2) {
+  animation:
+    floatPlanet 7s ease-in-out infinite;
+}
+
+.orbit-wrap .planet:nth-child(3) {
+  animation:
+    floatPlanet 8s ease-in-out infinite;
+}
+
+.orbit-wrap .planet:nth-child(4) {
+  animation:
+    floatPlanet 9s ease-in-out infinite;
+}
+
+.orbit-wrap .planet:nth-child(5) {
+  animation:
+    floatPlanet 10s ease-in-out infinite;
+}
+
+.orbit-wrap .planet:nth-child(6) {
+  animation:
+    floatPlanet 11s ease-in-out infinite;
+}
+
+@keyframes floatPlanet {
+  0%,100% {
+    transform: translateY(0px);
+  }
+
+  50% {
+    transform: translateY(-14px);
+  }
+}
+
+/* Cinematic Panels */
+.panel {
+  backdrop-filter: blur(10px);
+}
+
+/* Glass Upgrade */
+.glass,
+.q-wrap,
+.dream-card,
+.paper-inner,
+.memory-card .card-face {
+  background:
+    linear-gradient(
+      180deg,
+      rgba(255,255,255,0.08),
+      rgba(255,255,255,0.03)
+    );
+
+  border: 1px solid rgba(255,255,255,0.12);
+
+  box-shadow:
+    0 10px 40px rgba(0,0,0,0.35),
+    inset 0 1px 0 rgba(255,255,255,0.05);
+}
+
+/* Smooth Floating Animations */
+.memory-card,
+.dream-card,
+.q-wrap {
+  animation: gentleFloat 8s ease-in-out infinite;
+}
+
+@keyframes gentleFloat {
+  0%,100% {
+    transform: translateY(0px);
+  }
+
+  50% {
+    transform: translateY(-5px);
+  }
+}
+
+/* Cinematic Buttons */
+.btn {
+  position: relative;
+  overflow: hidden;
+}
+
+.btn::before {
+  content: "";
+  position: absolute;
+  top: -100%;
+  left: -100%;
+
+  width: 300%;
+  height: 300%;
+
+  background:
+    linear-gradient(
+      120deg,
+      transparent,
+      rgba(255,255,255,0.22),
+      transparent
+    );
+
+  transform: rotate(20deg);
+
+  transition: 0.8s;
+}
+
+.btn:hover::before {
+  top: 100%;
+  left: 100%;
+}
+
+/* Finale Glow */
+.finale-photo img {
+  box-shadow:
+    0 0 60px rgba(255,120,200,0.22),
+    0 0 120px rgba(180,120,255,0.15);
+}
+
+/* Mobile Optimization */
+@media (max-width: 768px) {
+
+  .orbit-wrap::before {
+    width: 420px;
+    height: 420px;
+  }
+
+  .orbit-wrap::after {
+    width: 580px;
+    height: 580px;
+  }
+
+  .planet {
+    min-width: 95px;
+    max-width: 110px;
+  }
+  
