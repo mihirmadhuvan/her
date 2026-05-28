@@ -970,3 +970,20 @@ body::after {
     max-width: 110px;
   }
   
+html, body {
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+  height: auto !important;
+  min-height: 100vh;
+}
+
+section,
+.screen,
+.panel {
+  min-height: 100vh !important;
+  height: auto !important;
+}
+
+* {
+  box-sizing: border-box;
+}
